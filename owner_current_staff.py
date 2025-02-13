@@ -9,6 +9,7 @@ via a drop down menu with a description that will include:
 . Will include a confirmation pop up to confirm this action.
 '''
 
+import os
 import toga 
 from toga.style import Pack
 from toga.constants import COLUMN
@@ -27,7 +28,6 @@ class TempApp(toga.App):
 
     def direct_to_page(self):
         button = toga.Button("press", on_press=self.owner_accepted_page, style=Pack(padding=10))
-
         box = toga.Box(
             children=[button],
             style=Pack(direction=COLUMN, alignment="center", padding=10)
@@ -35,10 +35,30 @@ class TempApp(toga.App):
         self.main_window.content = box
 
     def owner_accepted_page(self, widget):
+        # Get the current directory and set up image path
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        images_dir = os.path.join(current_dir, "images")
+        os.makedirs(images_dir, exist_ok=True)
+        default_profile_path = os.path.join(images_dir, "defaultpfp.png")
+        
+        # Create image dictionary mapping IDs to profile pictures
+        self.profile_images = {}
+        try:
+            default_image = toga.ImageView(default_profile_path)
+            default_image.style.update(width=200, height=100, padding=7)
+            # Map each ID to the default profile picture
+            self.profile_images = {
+                1: default_image,
+                2: default_image,
+                3: default_image
+            }
+        except Exception:
+            self.profile_images = {}
+
         # Initialize data
         self.data = {
-            "job at pharmacy 3": {
-                "picture": toga.Icon("icons/arthur"),
+            "job 1 at pharmacy 3": {
+                "ID": 1,
                 "name": "Arthur Smith",
                 "recommended": 0,
                 "hourly rate": f"${25:.2f}/h",
@@ -46,8 +66,8 @@ class TempApp(toga.App):
                 "start time": None,
                 "end time": None
             },
-            "job at pharmacy 2": {
-                "picture": toga.Icon("icons/arthur"),
+            "job 1 at pharmacy 2": {
+                "ID": 2,
                 "name": "Vincent Doom",
                 "recommended": 190,
                 "hourly rate": f"${75:.2f}/h",
@@ -55,8 +75,8 @@ class TempApp(toga.App):
                 "start time": None,
                 "end time": None
             },
-            "job at pharmacy 1": {
-                "picture": toga.Icon("icons/arthur"),
+            "job 1 at pharmacy 1": {
+                "ID": 3,
                 "name": "Frank Castle",
                 "recommended": 20,
                 "hourly rate": f"${55:.2f}/h",
@@ -75,19 +95,24 @@ class TempApp(toga.App):
             style=Pack(padding=5)
         )
         
+        #AI generated code (Claude)
         self.result_set = toga.MultilineTextInput(
             readonly=True,
             style=Pack(padding=5, flex=1)
         )
-        
-        # Create and show window
-        window = toga.Window(title="Job Listings")
-        window.content = toga.Box(
+
+        # Create content box without profile image initially
+        self.content_box = toga.Box(
             children=[widget_title, self.emp_table, self.result_set],
             style=Pack(direction=COLUMN, alignment="left", padding=20)
         )
+        
+        # Create and show window
+        window = toga.Window(title="Job Listings")
+        window.content = self.content_box
         window.show()
 
+    # AI generated code (Claude)
     def job_listing_change(self, widget, **kwargs):
         if widget.value:
             # Get job details
@@ -96,12 +121,20 @@ class TempApp(toga.App):
             # Format and display the results
             result_text = f"Details for {widget.value}:\n\n"
             for key, value in job_details.items():
-                if isinstance(value, toga.Icon):
-                    result_text += f"{key}: [Icon Object]\n"
-                else:
-                    result_text += f"{key}: {value}\n"
+                result_text += f"{key}: {value}\n"
             
             self.result_set.value = result_text
+            
+            # Update profile picture (CLAUDE)
+            staff_id = job_details["ID"]
+            if staff_id in self.profile_images:
+                # Remove old image if it exists
+                for child in self.content_box.children:
+                    if isinstance(child, toga.ImageView):
+                        self.content_box.remove(child)
+                
+                # Add new image after the selection box but before results
+                self.content_box.insert(2, self.profile_images[staff_id])
 
 def main():
     return TempApp("Temp App", "org.example.bewareapp")
