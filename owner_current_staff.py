@@ -1,4 +1,4 @@
-''''
+'''
 This program holds the window that will be used to display the activate staff members 
 via a drop down menu with a description that will include:
 1. hourly rate 
@@ -25,16 +25,45 @@ class TempApp(toga.App):
         self.main_window.show()
 
     def create_owner_view_staff(self):
-        def action_fulfill_button(fulfill_button):
-            toga.ConfirmDialog()
-            pass
-        def action_cancel_button(cancel_button):
-            # event 
-            pass
-         
-        # creating the 'fulfill' and 'cancel' buttons
-        fulfill_button = toga.Button("fulfill",on_press=action_fulfill_button)
-        cancel_button = toga.Button("cancel",on_press=action_cancel_button)
+        async def action_fulfill_button(widget):
+            """Handle fulfillment confirmation and remove job if confirmed."""
+            if self.current_selection:
+                confirm_question = await self.main_window.dialog(toga.ConfirmDialog(
+                    "Confirm fulfillment",
+                    "Has this job been completed?"
+                ))
+                if confirm_question:
+                    self.remove_selected_job()
+
+        async def action_cancel_button(widget):
+            """Handle termination confirmation and remove job if confirmed."""
+            if self.current_selection:
+                confirm_question = await self.main_window.dialog(toga.ConfirmDialog(
+                    "Confirm termination",
+                    "Terminate this employee?"
+                ))
+                if confirm_question:
+                    self.remove_selected_job()
+
+        # Create buttons
+        self.fulfill_button = toga.Button(
+            "fulfill",
+            on_press=action_fulfill_button,
+            style=Pack(padding=5, width=100, background_color ='#228b22', color = '#FFFFFF')
+        )
+        self.cancel_button = toga.Button(
+            "cancel",
+            on_press=action_cancel_button,
+            style=Pack(padding=5, width=100)
+        )
+
+        # Create button container
+        self.button_container = toga.Box(
+            children=[self.fulfill_button, self.cancel_button],
+            style=Pack(direction=ROW, padding=5, alignment='center')
+        )
+        
+        self.current_selection = None
 
         # Get the current directory and set up image path
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -85,12 +114,19 @@ class TempApp(toga.App):
         # Create dedicated container for profile pictures
         self.profile_container = toga.Box(
             style=Pack(direction=COLUMN, alignment='center', padding=5)
+
         )
 
         # Create result set for job details
         self.result_set = toga.MultilineTextInput(
             readonly=True,
             style=Pack(padding=5, flex=1, height=200)
+        )
+
+        # Create content container that will hold both profile and buttons
+        self.content_container = toga.Box(
+            children=[self.profile_container, self.result_set, self.button_container],
+            style=Pack(direction=COLUMN, padding=5)
         )
 
         # Header
@@ -103,8 +139,8 @@ class TempApp(toga.App):
                 padding=(20, 5),
                 width=100,
                 height=30,
-                background_color='#FFFFFF',  # White text'
-                color='#228b22', # Forest green
+                background_color='#FFFFFF',
+                color='#228b22',
             )
         )
         
@@ -130,16 +166,22 @@ class TempApp(toga.App):
         # Post label
         post_label = toga.Label('Active staff', style=Pack(padding=(10, 20)))
         
+        # Add a prompt label
+        self.prompt_label = toga.Label(
+            'Select a job to view details',
+            style=Pack(padding=20, text_align='center')
+        )
+        
         # Create dropdown menu for jobs
-        job_selection = toga.Selection(
-            items=list(self.data.keys()),
+        self.job_selection = toga.Selection(
+            items=['Select a job...'] + list(self.data.keys()),
             on_select=self.job_selection_change,
             style=Pack(padding=(15, 20), width=300)
         )
         
         # Create container for the dropdown
         job_container = toga.Box(
-            children=[job_selection],
+            children=[self.job_selection],
             style=Pack(direction=COLUMN, padding=10, alignment='center')
         )
 
@@ -173,7 +215,7 @@ class TempApp(toga.App):
                 label, 
                 style=Pack(
                     font_size=12,
-                    padding=(5, 0, 0, 0),  # Add padding above the label
+                    padding=(5, 0, 0, 0),
                     text_align='center'
                 )
             )
@@ -184,19 +226,24 @@ class TempApp(toga.App):
                     direction=COLUMN,
                     alignment='center',
                     flex=1,
-                    padding=(5, 10)  # Reduced vertical padding
+                    padding=(5, 10)
                 )
             )
             nav_box.add(nav_item)
+
+        # Create a container for dynamic content
+        self.dynamic_content = toga.Box(
+            children=[self.prompt_label],
+            style=Pack(direction=COLUMN, padding=5)
+        )
 
         # Main container with updated layout
         self.content_box = toga.Box(
             children=[
                 header_box,
                 toga.Box(children=[post_label], style=Pack(direction=ROW)),
-                job_container,  # Changed from job_list to job_container
-                self.profile_container,
-                self.result_set,
+                job_container,
+                self.dynamic_content,
                 toga.Box(style=Pack(flex=1)),  # Spacer
                 nav_box
             ],
@@ -204,36 +251,83 @@ class TempApp(toga.App):
         )
         
         self.main_window.content = self.content_box
+    
+    def clear_job_display(self):
+        """Clear all job-related display elements"""
+        # Remove all children from dynamic content
+        self.dynamic_content.remove(*self.dynamic_content.children)
+        
+        # Add back the prompt label
+        self.dynamic_content.add(self.prompt_label)
+        
+        # Clear current selection
+        self.current_selection = None
 
     def job_selection_change(self, widget):
         """Handle job selection from dropdown menu"""
         job_key = widget.value
-        if job_key in self.data:
+        
+        # Clear the dynamic content
+        self.dynamic_content.remove(*self.dynamic_content.children)
+        
+        if job_key and job_key != 'Select a job...' and job_key in self.data:
+            self.current_selection = job_key
             job_details = self.data[job_key]
             
-            # Format and display the results
+            # Create a new MultilineTextInput for this selection
             result_text = f"Details for {job_key}:\n\n"
             for key, value in job_details.items():
                 result_text += f"{key}: {value}\n"
             
-            self.result_set.value = result_text
+            result_display = toga.MultilineTextInput(
+                readonly=True,
+                value=result_text,
+                style=Pack(padding=5, flex=1, height=200)
+            )
             
-            # Update profile picture in the dedicated container
+            # Get the profile picture
             staff_id = job_details["ID"]
             if staff_id in self.profile_images:
-                # Clear the profile container
-                for child in self.profile_container.children:
-                    self.profile_container.remove(child)
-                
-                # Add the new profile picture
-                self.profile_container.add(self.profile_images[staff_id])
+                profile_pic = self.profile_images[staff_id]
+            else:
+                profile_pic = None
+            
+            # Create a new container for this selection's content
+            selection_content = toga.Box(
+                style=Pack(direction=COLUMN, padding=5)
+            )
+            
+            if profile_pic:
+                selection_content.add(profile_pic)
+            
+            selection_content.add(result_display)
+            selection_content.add(self.button_container)
+            
+            # Add the selection content to dynamic content
+            self.dynamic_content.add(selection_content)
+        else:
+            # Show the prompt if no valid selection
+            self.dynamic_content.add(self.prompt_label)
+            self.current_selection = None
+    
+    def remove_selected_job(self):
+        """Remove the selected job from the dropdown and data dictionary."""
+        if self.current_selection and self.current_selection in self.data:
+            # Remove the job from the data dictionary
+            del self.data[self.current_selection]
+            
+            # Update the dropdown items
+            self.job_selection.items = ['Select a job...'] + list(self.data.keys())
+            
+            # Clear the display
+            self.clear_job_display()
 
     def placeholder_action(self, widget):
-        # Placeholder for button actions
+        # Placeholder for action of the add job
         pass
 
 def main():
-    return TempApp("Home", "org.example.home")
+    return TempApp("TempApp", "org.example.home")
 
 if __name__ == "__main__":
     app = main()
