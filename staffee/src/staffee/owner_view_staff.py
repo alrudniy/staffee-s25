@@ -197,7 +197,7 @@ class OwnerViewStaffWindow(toga.Window):
 
         # Get the current directory and set up image path (CLAUDE)
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        images_dir = os.path.join(current_dir, "images")
+        images_dir = os.path.join(current_dir, "resources" , "images")
         os.makedirs(images_dir, exist_ok=True)
         default_profile_path = os.path.join(images_dir, "defaultpfp.png")
         
@@ -524,6 +524,3 @@ class OwnerViewStaffWindow(toga.Window):
 
 def main():
     return OwnerViewStaffWindow
-
-if __name__ == '__main__':
-    main()
