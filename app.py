@@ -20,39 +20,44 @@ class BeeWareApp(toga.App):
         self.show_login_screen()
         self.main_window.show()
 
-    def show_login_screen(self):
+    def show_login_screen(self, widget=None):
         """Display the login screen."""
         title = toga.Label("Sign In", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
         email_label = toga.Label("Email", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
         self.username_input = toga.TextInput(placeholder="georgia.young@example.com", style=Pack(padding=(10, 10, 20, 10), font_size=15))
         password_label = toga.Label("Password", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
         self.password_input = toga.PasswordInput(placeholder="", style=Pack(padding=(10, 10, 20, 10), font_size=15))
-        
-        login_button = toga.Button("Sign In", on_press=self.login, style=Pack(padding=(9, 9, 9, 9), background_color="green", color="white", height=50, font_size=10, font_weight="bold"))
-        create_account_button = toga.Button("Create Account", on_press=self.show_create_account_screen, style=Pack(padding=(9, 9, 9, 9), background_color="blue", color="white", height=50, font_size=10, font_weight="bold"))
+
+        login_button = toga.Button("Sign In", on_press=self.login, style=Pack(padding=9, background_color="green", color="white", height=50, font_size=10, font_weight="bold"))
+
+        donthaveacc = toga.Label("Don't have an account?", style=Pack(font_size=12, background_color="white", padding_right=5))
+        create_account_label = toga.Button("Sign Up", on_press=self.show_create_account_screen, style=Pack(background_color="white", color="green", font_size=12))
+
+        account_box = toga.Box(children=[donthaveacc, create_account_label], style=Pack(direction="row", alignment="center", padding=10, background_color="white"))
 
         self.message_label = toga.Label("", style=Pack(padding=5, color="red", background_color="white"))
 
         box = toga.Box(
-            children=[title, email_label, self.username_input, password_label, self.password_input, login_button, create_account_button, self.message_label],
+            children=[title, email_label, self.username_input, password_label, self.password_input, login_button, account_box, self.message_label],
             style=Pack(direction=COLUMN, alignment="center", padding=10, background_color="white")
         )
+
         self.main_window.content = box
 
     def show_create_account_screen(self, widget=None):
         """Display the Create Account screen."""
-        title = toga.Label("Create Account", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
+        title = toga.Label("Create a free account", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
         email_label = toga.Label("Email", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
         self.email_input = toga.TextInput(placeholder="your.email@example.com", style=Pack(padding=(10, 10, 20, 10), font_size=15))
-        
+
         password_label = toga.Label("Password", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
-        self.password_input = toga.PasswordInput(placeholder="Enter your password", style=Pack(padding=(10, 10, 20, 10), font_size=15))
-        
+        self.password_input = toga.PasswordInput(style=Pack(padding=(10, 10, 20, 10), font_size=15))
+
         confirm_password_label = toga.Label("Confirm Password", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
-        self.confirm_password_input = toga.PasswordInput(placeholder="Confirm your password", style=Pack(padding=(10, 10, 20, 10), font_size=15))
-        
-        create_button = toga.Button("Create Account", on_press=self.create_account, style=Pack(padding=(9, 9, 9, 9), background_color="green", color="white", height=50, font_size=10, font_weight="bold"))
-        back_button = toga.Button("Back to Login", on_press=self.show_login_screen, style=Pack(padding=(9, 9, 9, 9), background_color="gray", color="white", height=50, font_size=10, font_weight="bold"))
+        self.confirm_password_input = toga.PasswordInput(style=Pack(padding=(10, 10, 20, 10), font_size=15))
+
+        create_button = toga.Button("Create Account", on_press=self.create_account, style=Pack(padding=9, background_color="green", color="white", height=50, font_size=10, font_weight="bold"))
+        back_button = toga.Button("Back to Login", on_press=self.show_login_screen, style=Pack(padding=9, background_color="gray", color="white", height=50, font_size=10, font_weight="bold"))
 
         self.message_label = toga.Label("", style=Pack(padding=5, color="red", background_color="white"))
 
@@ -95,10 +100,8 @@ class BeeWareApp(toga.App):
         try:
             conn = mysql.connector.connect(**DB_CONFIG)
             cursor = conn.cursor()
-
             query = "INSERT INTO Users (email, password) VALUES (%s, %s)"
             cursor.execute(query, (email, hashed_password))
-
             conn.commit()
             cursor.close()
             conn.close()
