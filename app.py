@@ -46,7 +46,7 @@ class BeeWareApp(toga.App):
 
     def show_create_account_screen(self, widget=None):
         """Display the Create Account screen."""
-        title = toga.Label("Create a free account", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
+        title = toga.Label(    "Create a\nfree account", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
         email_label = toga.Label("Email", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
         self.email_input = toga.TextInput(placeholder="your.email@example.com", style=Pack(padding=(10, 10, 20, 10), font_size=15))
 
@@ -57,12 +57,15 @@ class BeeWareApp(toga.App):
         self.confirm_password_input = toga.PasswordInput(style=Pack(padding=(10, 10, 20, 10), font_size=15))
 
         create_button = toga.Button("Create Account", on_press=self.create_account, style=Pack(padding=9, background_color="green", color="white", height=50, font_size=10, font_weight="bold"))
-        back_button = toga.Button("Back to Login", on_press=self.show_login_screen, style=Pack(padding=9, background_color="gray", color="white", height=50, font_size=10, font_weight="bold"))
+        alreadyhaveacc = toga.Label("Already have an account?", style=Pack(font_size=12, background_color="white", padding_right=5))
+
+        back_button = toga.Button("Sign In", on_press=self.show_login_screen, style=Pack(background_color="white", color="green", font_size=12))
+        account_box = toga.Box(children=[alreadyhaveacc, back_button], style=Pack(direction="row", alignment="center", padding=10, background_color="white"))
 
         self.message_label = toga.Label("", style=Pack(padding=5, color="red", background_color="white"))
 
         box = toga.Box(
-            children=[title, email_label, self.email_input, password_label, self.password_input, confirm_password_label, self.confirm_password_input, create_button, back_button, self.message_label],
+            children=[title, email_label, self.email_input, password_label, self.password_input, confirm_password_label, self.confirm_password_input, create_button, account_box, self.message_label],
             style=Pack(direction=COLUMN, alignment="center", padding=10, background_color="white")
         )
         self.main_window.content = box
