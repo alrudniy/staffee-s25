@@ -144,6 +144,10 @@ class BeeWareApp(toga.App):
         except mysql.connector.Error as err:
             print(f"Database Error: {err}")
             return False
+    def logout(self):
+        self.show_login_screen()
+
+        
 
     def show_screen_a(self, widget=None): 
         # --- Screen A ---
