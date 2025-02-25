@@ -20,7 +20,7 @@ class BeeWareApp(toga.App):
         self.show_login_screen()
         self.main_window.show()
 
-    def show_login_screen(self, widget=None):
+    def show_login_screen(self):
         """Display the login screen."""
         title = toga.Label("Sign In", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
         email_label = toga.Label("Email", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
@@ -44,9 +44,9 @@ class BeeWareApp(toga.App):
 
         self.main_window.content = box
 
-    def show_create_account_screen(self, widget=None):
+    def show_create_account_screen(self):
         """Display the Create Account screen."""
-        title = toga.Label(    "Create a\nfree account", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
+        title = toga.Label("Create a\nfree account", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
         email_label = toga.Label("Email", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
         self.email_input = toga.TextInput(placeholder="your.email@example.com", style=Pack(padding=(10, 10, 20, 10), font_size=15))
 
@@ -134,9 +134,6 @@ class BeeWareApp(toga.App):
             cursor.execute(query, (email,))
             user = cursor.fetchone()
 
-            cursor.close()
-            conn.close()
-
             if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
                 return True
             else:
@@ -153,6 +150,8 @@ class BeeWareApp(toga.App):
         box = toga.Box(children=[label, logout_button], style=Pack(direction=COLUMN, alignment="center", padding=10))
         self.main_window.content = box
 
+    # Add other screens (B, C, D, E, F, G) below...
+    
 def main():
     return BeeWareApp("BeeWare Navigation App", "org.example.bewareapp")
 
