@@ -45,14 +45,68 @@ class SettingsApp(toga.App):
         header_box = toga.Box(
             children=[back_button, title_label],
             style=Pack(direction=ROW, alignment="center"))
+
+        # Add notifications button
+        notifications = toga.Button(
+            "Notifications",
+            on_press=self.placeholder_action,
+            style=Pack(padding=5)
+        )
+
+        # Personal information
+        personal_info = toga.Button(
+            "Personal Information",
+            on_press=self.placeholder_action,
+            style=Pack(padding=5)
+        )
+
+        # Change password
+        change_password = toga.Button(
+            "Change Password",
+            on_press=self.placeholder_action,
+            style=Pack(padding=5)
+        )
+
+        # Payment options
+        payment_options = toga.Button(
+            "Payment Options",
+            on_press=self.placeholder_action,
+            style=Pack(padding=5)
+        )
+
+        # Support
+        support = toga.Button(
+            "Support",
+            on_press=self.placeholder_action,
+            style=Pack(padding=5)
+        )
+
+        # Terms of Service
+        tos = toga.Button(
+            "Terms of Service",
+            on_press=self.placeholder_action,
+            style=Pack(padding=5)
+        )
+
+        # Contents box
+        contents_box = toga.Box(
+            children=[notifications, personal_info, change_password, payment_options, support, tos],
+            style=Pack(direction=COLUMN, alignment="center", padding=10)
+        )
         
         main_box = toga.Box(
-            children=[header_box],
+            children=[header_box, contents_box],
             style=Pack(direction=COLUMN, alignment="center", padding=10)
         )
 
         self.main_window.content = main_box
     
-    def placeholder_action(self, widget):
-        # Placeholder for action of the add job
-            pass
+    def placeholder_action(self, widget):  # Placeholder for action of the add job
+        pass
+
+def main():
+    return SettingsApp("SettingsApp", "org.example.home")
+
+if __name__ == "__main__":
+    app = main()
+    app.main_loop()
