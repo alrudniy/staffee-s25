@@ -47,7 +47,7 @@ class BeeWareApp(toga.App):
 
         self.main_window.content = box
 
-    def show_create_account_screen(self):
+    def show_create_account_screen(self, widget):
         """Display the Create Account screen."""
         title = toga.Label("Create a\nfree account", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
         email_label = toga.Label("Email", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
@@ -62,7 +62,7 @@ class BeeWareApp(toga.App):
         create_button = toga.Button("Create Account", on_press=self.create_account, style=Pack(padding=9, background_color="green", color="white", height=50, font_size=10, font_weight="bold"))
         alreadyhaveacc = toga.Label("Already have an account?", style=Pack(font_size=12, background_color="white", padding_right=5))
 
-        back_button = toga.Button("Sign In", on_press=self.show_login_screen, style=Pack(background_color="white", color="green", font_size=12))
+        back_button = toga.Button("Sign In",  on_press=lambda widget: self.show_login_screen(), style=Pack(background_color="white", color="green", font_size=12))
         account_box = toga.Box(children=[alreadyhaveacc, back_button], style=Pack(direction="row", alignment="center", padding=10, background_color="white"))
 
         self.message_label = toga.Label("", style=Pack(padding=5, color="red", background_color="white"))
@@ -144,7 +144,7 @@ class BeeWareApp(toga.App):
         except mysql.connector.Error as err:
             print(f"Database Error: {err}")
             return False
-    def logout(self):
+    def logout(self, widget):
         self.show_login_screen()
 
         
