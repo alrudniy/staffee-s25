@@ -46,52 +46,58 @@ class SettingsApp(toga.App):
             children=[back_button, title_label],
             style=Pack(direction=ROW, alignment="center"))
 
+
         # Add notifications button
         notifications = toga.Button(
             "Notifications",
-            on_press=self.placeholder_action,
-            style=Pack(padding=5)
+            on_press=self.create_notif_settings_view,
+            style=Pack(padding_left=0, padding_right=50, width=200, text_align="left")
         )
 
         # Personal information
         personal_info = toga.Button(
             "Personal Information",
             on_press=self.placeholder_action,
-            style=Pack(padding=5)
+            style=Pack(height=40, padding=5)
         )
 
         # Change password
         change_password = toga.Button(
             "Change Password",
             on_press=self.placeholder_action,
-            style=Pack(padding=5)
+            style=Pack(height=40, padding=5)
         )
 
         # Payment options
         payment_options = toga.Button(
             "Payment Options",
             on_press=self.placeholder_action,
-            style=Pack(padding=5)
+            style=Pack(height=40, padding=5)
         )
 
         # Support
         support = toga.Button(
             "Support",
             on_press=self.placeholder_action,
-            style=Pack(padding=5)
+            style=Pack(height=40, padding=5)
         )
 
         # Terms of Service
         tos = toga.Button(
             "Terms of Service",
             on_press=self.placeholder_action,
-            style=Pack(padding=5)
+            style=Pack(height=40, padding=5)
         )
 
         # Contents box
         contents_box = toga.Box(
-            children=[notifications, personal_info, change_password, payment_options, support, tos],
-            style=Pack(direction=COLUMN, alignment="center", padding=10)
+            children=[notifications, toga.Divider(),
+                      personal_info, toga.Divider(),
+                      change_password, toga.Divider(),
+                      payment_options, toga.Divider(),
+                      support, toga.Divider(),
+                      tos, toga.Divider()],
+            style=Pack(direction=COLUMN, padding=10)
         )
         
         main_box = toga.Box(
@@ -100,6 +106,38 @@ class SettingsApp(toga.App):
         )
 
         self.main_window.content = main_box
+
+    def create_notif_settings_view(self, widget):
+        # Get the current directory and set up image path
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        images_dir = os.path.join(current_dir, "images")
+        os.makedirs(images_dir, exist_ok=True)
+
+        # Create paths for icons with error handling
+        try:
+            back_icon_path = os.path.join(images_dir, "back_arrow.png")
+
+            back_icon = toga.Icon(back_icon_path)
+        except Exception as e:
+            print(f"Error loading icons: {e}")
+            back_icon = None
+
+        # Back arrow button 
+        back_button = toga.Button(
+            icon=back_icon,
+            on_press=self.placeholder_action,
+            style=Pack(padding=(20, 5), width=30, height=30, flex=1)
+        )
+
+        # Chat label
+        title_label = toga.Label(
+            "Notification Settings", style=Pack(padding=(15, 5), font_size=15, 
+            font_family = 'sans-serif', flex=8))
+        
+        # Header box 
+        header_box = toga.Box(
+            children=[back_button, title_label],
+            style=Pack(direction=ROW, alignment="center"))
     
     def placeholder_action(self, widget):  # Placeholder for action of the add job
         pass
