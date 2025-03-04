@@ -1,5 +1,5 @@
 '''
-This program holds the window that will be used to display the activate staff members 
+This program holds the view that will be used to display the activate staff members 
 with a description that will include:
 1. hourly rate 
 2. date and time slot they are scheduled
@@ -13,13 +13,15 @@ import os
 import toga
 from toga.style import Pack
 from toga.constants import *
+from staffee.profile_view import ProfileView
 
 # ensuring that the class is exportable (CLAUDE)
-__all__ = ['OwnerViewStaffWindow']
+__all__ = ['OwnerViewStaff']
 
-class OwnerViewStaffWindow(toga.Window):
-    def __init__(self):
-        super().__init__(title="Owner View Staff", size=(800, 600))
+class OwnerViewStaff:
+    def __init__(self, app):
+        # Store the app instance
+        self.app = app
 
         # Initialize data
         self.data = {
@@ -136,70 +138,37 @@ class OwnerViewStaffWindow(toga.Window):
             }
         }
 
-        self.create_owner_view_staff()
-    
-    def create_owner_view_staff(self):
+        # Create image dictionary mapping IDs to profile pictures
+        self.profile_images = {}
+        try:
+            # Try to use the app's default profile image if available
+            images_dir = self.app.paths.app / "resources" / "images"
+            default_profile_path = os.path.join(images_dir, "defaultpfp.png")
+            default_image = toga.ImageView(default_profile_path)
+            default_image.style.update(width=50, height=80, padding=7)
+            # Map each ID to the default profile picture
+            self.profile_images = {1: default_image, 2: default_image, 3: default_image}
+        except Exception as e:
+            print(f"Error loading profile images: {e}")
+            self.profile_images = {}
 
-        self.current_selection = None
+    def create_content(self):
 
-        async def action_fulfill_button(widget):
-            """Handle fulfillment confirmation and remove job if confirmed."""
-            if self.current_selection:
-                confirm_question = await self.dialog(toga.ConfirmDialog(
-                    "Confirm fulfillment",
-                    "Has this job been completed?",
-                ))
-
-                ''' adding a 'review' feature in lack of star review system 
-                (Claude helped with implementation, I chose the question dialog)'''
-
-                if confirm_question:
-                    # Ask if they want to recommend the staff member
-                    recommend_question = await self.dialog(toga.QuestionDialog(
-                        "Recommend staff",
-                        "Do you recommend this applicant ?", # YES == True, NO == FALSE
-                    ))
-                    if recommend_question:
-                        # Increment the recommended count
-                        staff_id = self.data[self.current_selection]["ID"]
-                        self.data[self.current_selection]["recommended"] += 1
-                    
-                    self.remove_selected_job()
-
-        async def action_cancel_button(widget):
-            """Handle termination confirmation and remove job if confirmed."""
-            if self.current_selection:
-                confirm_question = await self.dialog(toga.ConfirmDialog(
-                    "Confirm termination",
-                    "Terminate this employee?",
-                ))
-                if confirm_question:
-                    self.remove_selected_job()
-
-        # Create buttons
-        self.fulfill_button = toga.Button(
-            "fulfill",
-            on_press=action_fulfill_button,
-            style=Pack(padding=5, width=100, background_color ='#228b22', color = '#FFFFFF')
-        )
-        self.cancel_button = toga.Button(
-            "cancel",
-            on_press=action_cancel_button,
-            style=Pack(padding=5, width=100)
-        )
-
-        # Create button container
-        self.button_container = toga.Box(
-            children=[self.fulfill_button, self.cancel_button],
-            style=Pack(direction=ROW, padding=5, alignment='center')
+        # Back button to return to main view
+        back_button = toga.Button(
+            '← Back',
+            on_press=self.navigate_back,
+            style=Pack(
+                padding=(5, 5),
+                width=80,
+                height=30,
+                background_color='#228b22',
+                color='#FFFFFF',
+            )
         )
         
-
-        # Get the current directory and set up image path (CLAUDE)
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        images_dir = os.path.join(current_dir, "images")
-        os.makedirs(images_dir, exist_ok=True)
-        default_profile_path = os.path.join(images_dir, "defaultpfp.png")
+        # Get the application's image directory
+        images_dir = self.app.paths.app / "resources" / "images"
         
         # Create paths for the icons with error handling
         try:
@@ -211,37 +180,16 @@ class OwnerViewStaffWindow(toga.Window):
         except Exception as e:
             print(f"Error loading icons: {e}")
             cal_icon = chat_icon = home_icon = noti_icon = user_icon = None
-        
-        # Create image dictionary mapping IDs to profile pictures
-        self.profile_images = {}
-        try:
-            default_image = toga.ImageView(default_profile_path)
-            default_image.style.update(width=200, height=100, padding=7)
-            # Map each ID to the default profile picture
-            self.profile_images = {1: default_image, 2: default_image, 3: default_image}
-        except Exception:
-            self.profile_images = {}
-
-        # Create dedicated container for profile pictures
-        self.profile_container = toga.Box(
-            style=Pack(direction=COLUMN, alignment='center', padding=5)
-        )
-
-        # Create result set for job details
-        self.result_set = toga.MultilineTextInput(
-            readonly=True,
-            style=Pack(padding=5, flex=1, height=200)
-        )
-
-        # Create content container that will hold both profile and buttons
-        self.content_container = toga.Box(
-            children=[self.profile_container, self.result_set, self.button_container],
-            style=Pack(direction=COLUMN, padding=5)
-        )
 
         # Header
         title_label = toga.Label('Active Staff View', style=Pack(font_size=18, font_weight='bold', padding=(20, 20, 10, 20)))
         
+        # Add back button to the header
+        header_box = toga.Box(
+            children=[back_button, title_label],
+            style=Pack(direction=ROW, alignment='center', padding=(0, 10))
+        )
+
         new_job_button = toga.Button(
             '+ New job',
             on_press=self.placeholder_action,
@@ -259,17 +207,17 @@ class OwnerViewStaffWindow(toga.Window):
             calendar_button = toga.Button(
                 icon=cal_icon,
                 on_press=self.placeholder_action,
-                style=Pack(padding=(20, 5), width=50, height=50)
+                style=Pack(padding=(20, 5), width=30, height=30)
             )
         else:
             calendar_button = toga.Button(
                 '📅',
                 on_press=self.placeholder_action,
-                style=Pack(padding=(20, 5), width=50, height=50)
+                style=Pack(padding=(20, 5), width=30, height=30)
             )
         
-        header_box = toga.Box(
-            children=[title_label, new_job_button, calendar_button],
+        action_box = toga.Box(
+            children=[new_job_button, calendar_button],
             style=Pack(direction=ROW, alignment='center', padding=(0, 10))
         )
 
@@ -315,13 +263,13 @@ class OwnerViewStaffWindow(toga.Window):
                 nav_button = toga.Button(
                     icon=icon,
                     on_press=self.placeholder_action,
-                    style=Pack(width=50, height=50)
+                    style=Pack(width=30, height=30)
                 )
             else:
                 nav_button = toga.Button(
                     fallback,
                     on_press=self.placeholder_action,
-                    style=Pack(width=50, height=50)
+                    style=Pack(width=30, height=30)
                 )
 
             label_widget = toga.Label(
@@ -351,9 +299,10 @@ class OwnerViewStaffWindow(toga.Window):
         )
 
         # Main container with updated layout
-        self.content_box = toga.Box(
+        content_box = toga.Box(
             children=[
                 header_box,
+                action_box,
                 toga.Box(children=[post_label], style=Pack(direction=ROW)),
                 job_scroll_container,  # Using the scroll container here
                 self.dynamic_content,
@@ -363,7 +312,20 @@ class OwnerViewStaffWindow(toga.Window):
             style=Pack(direction=COLUMN)
         )
         
-        self.content = self.content_box
+        return content_box
+
+    def navigate_back(self, widget):
+        """Navigate back to the main view"""
+        # Access the main app to switch back to the main view
+        self.app.main_window.title = self.app.formal_name
+        self.app.main_window.content = self.app.main_content
+        
+        # If the app has navigation history, update it
+        if hasattr(self.app, 'navigation_history') and hasattr(self.app, 'current_view'):
+            if self.app.navigation_history:
+                self.app.navigation_history.pop()  # Remove current view from history
+            
+            self.app.current_view = "main"  # Set current view back to main
 
     def generate_job_buttons(self):
         """Generate individual job buttons for scrollable content"""
@@ -379,119 +341,55 @@ class OwnerViewStaffWindow(toga.Window):
                 on_press=lambda widget, key=job_key: self.select_job(key),
                 style=Pack(
                 padding=(3, 6, 3, 6),  # top, right, bottom, left padding
-                width=280,
+                width=200,
                 height=50,
                 alignment='left',
                 background_color='#f0f0f0'
             )
-        )
+            )
             
             self.scrollable_content.add(job_button)
 
     def select_job(self, job_key):
         """Handler for clicking a job button"""
         if job_key in self.data:
-            # Clear the dynamic content
-            self.dynamic_content.remove(*self.dynamic_content.children)
+            # Store the current selection
             self.current_selection = job_key
-        
+            
             # Get job details
             job_details = self.data[job_key]
-        
-            # Create a box for profile picture
-            profile_container = toga.Box(
-                style=Pack(direction=COLUMN, alignment='center', padding=5)
-            )
-        
-            # Get and add profile picture
+            
+            # Get the profile picture for this staff
             staff_id = job_details["ID"]
-            if staff_id in self.profile_images:
-                profile_pic = self.profile_images[staff_id]
-                profile_container.add(profile_pic)
-        
-            # Create text display for job details
-            result_text = f"Details for {job_key}:\n\n"
-            result_text += f"Name: {job_details['name']}\n"
-            result_text += f"ID: {job_details['ID']}\n"
-            result_text += f"Hourly Rate: {job_details['hourly rate']}\n"
-            result_text += f"Recommendations: {job_details['recommended']}\n"
-        
-            result_display = toga.MultilineTextInput(
-                readonly=True,
-                value=result_text,
-                style=Pack(padding=5, flex=1, height=150)  # Reduced height to fit better
-            )
-        
-        # Create a container for content
-        content_box = toga.Box(
-            children=[
-                profile_container,
-                result_display,
-                self.button_container  # Add the existing button container
-            ],
-            style=Pack(direction=COLUMN, padding=5, alignment='center')
-        )
-        
-        # Add the content box to dynamic content
-        self.dynamic_content.add(content_box)
+            profile_pic = self.profile_images.get(staff_id, None)
+            
+            # Open the profile view for this job
+            self.open_profile_view(job_key, job_details, profile_pic)
+
+    def open_profile_view(self, job_key, job_details, profile_pic):
+        """Open the profile view for the selected job"""
+        # Save current view to history for back navigation
+        self.app.navigation_history.append(self.app.current_view)
+        self.app.current_view = "profile_view"
+    
+        # Update the main window title
+        self.app.main_window.title = f"Profile: {job_details['name']}"
+    
+        # Update main window content with profile view, passing job_key
+        profile_view = ProfileView(self.app) 
+        profile_content = profile_view.create_content(job_details, profile_pic, job_key)
+        self.app.main_window.content = profile_content
 
     def clear_job_display(self):
         """Clear all job-related display elements"""
         # Remove all children from dynamic content
         self.dynamic_content.remove(*self.dynamic_content.children)
         
-        # Add back the prompt label
+            # Add back the prompt label
         self.dynamic_content.add(self.prompt_label)
         
-        # Clear current selection
+            # Clear current selection
         self.current_selection = None
-
-    def job_selection_change(self, widget):
-        """Handle job selection from dropdown menu"""
-        job_key = widget.value
-        
-        # Clear the dynamic content
-        self.dynamic_content.remove(*self.dynamic_content.children)
-        
-        if job_key and job_key != 'Select a job...' and job_key in self.data:
-            self.current_selection = job_key
-            job_details = self.data[job_key]
-            
-            # Create a new MultilineTextInput for this selection
-            result_text = f"Details for {job_key}:\n\n"
-            for key, value in job_details.items():
-                result_text += f"{key}: {value}\n"
-            
-            result_display = toga.MultilineTextInput(
-                readonly=True,
-                value=result_text,
-                style=Pack(padding=5, flex=1, height=200)
-            )
-            
-            # Get the profile picture
-            staff_id = job_details["ID"]
-            if staff_id in self.profile_images:
-                profile_pic = self.profile_images[staff_id]
-            else:
-                profile_pic = None
-            
-            # Create a new container for this selection's content
-            selection_content = toga.Box(
-                style=Pack(direction=COLUMN, padding=5)
-            )
-            
-            if profile_pic:
-                selection_content.add(profile_pic)
-            
-            selection_content.add(result_display)
-            selection_content.add(self.button_container)
-            
-            # Add the selection content to dynamic content
-            self.dynamic_content.add(selection_content)
-        else:
-            # Show the prompt if no valid selection
-            self.dynamic_content.add(self.prompt_label)
-            self.current_selection = None
     
     def remove_selected_job(self):
         """Remove the selected job from the data and refresh the display."""
@@ -516,14 +414,7 @@ class OwnerViewStaffWindow(toga.Window):
         
         # Regenerate job buttons
         self.generate_job_buttons()
-
+    
     def placeholder_action(self, widget):
         """Placeholder for button actions"""
         pass
-
-
-def main():
-    return OwnerViewStaffWindow
-
-if __name__ == '__main__':
-    main()
