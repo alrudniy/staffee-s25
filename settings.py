@@ -33,60 +33,61 @@ class SettingsApp(toga.App):
         back_button = toga.Button(
             icon=back_icon,
             on_press=self.placeholder_action,
-            style=Pack(padding=(20, 5), width=30, height=30, flex=1)
+            style=Pack(padding=5, width=30, height=30, flex=2)
         )
 
         # Chat label
         title_label = toga.Label(
-            "Settings", style=Pack(padding=(15, 5), font_size=15, 
-            font_family = 'sans-serif', flex=8))
+            "Settings", style=Pack(padding=(15, 35, 15, 0), font_size=15, 
+            font_family = 'sans-serif', flex=8, background_color="#ffffff", text_align="center"))
         
         # Header box 
         header_box = toga.Box(
             children=[back_button, title_label],
-            style=Pack(direction=ROW, alignment="center"))
+            style=Pack(direction=ROW, alignment="center", background_color="#ffffff"))
 
 
         # Add notifications button
         notifications = toga.Button(
             "Notifications",
             on_press=self.create_notif_settings_view,
-            style=Pack(padding_left=0, padding_right=50, width=200, text_align="left")
+            style=Pack(height=40, padding=5, background_color="#ffffff",
+            color="#364052")
         )
 
         # Personal information
         personal_info = toga.Button(
             "Personal Information",
             on_press=self.placeholder_action,
-            style=Pack(height=40, padding=5)
+            style=Pack(height=40, padding=5, background_color="#ffffff", color="#364052")
         )
 
         # Change password
         change_password = toga.Button(
             "Change Password",
             on_press=self.placeholder_action,
-            style=Pack(height=40, padding=5)
+            style=Pack(height=40, padding=5, background_color="#ffffff", color="#364052")
         )
 
         # Payment options
         payment_options = toga.Button(
             "Payment Options",
             on_press=self.placeholder_action,
-            style=Pack(height=40, padding=5)
+            style=Pack(height=40, padding=5, background_color="#ffffff", color="#364052")
         )
 
         # Support
         support = toga.Button(
             "Support",
             on_press=self.placeholder_action,
-            style=Pack(height=40, padding=5)
+            style=Pack(height=40, padding=5, background_color="#ffffff", color="#364052")
         )
 
         # Terms of Service
         tos = toga.Button(
             "Terms of Service",
             on_press=self.placeholder_action,
-            style=Pack(height=40, padding=5)
+            style=Pack(height=40, padding=5, background_color="#ffffff", color="#364052")
         )
 
         # Contents box
@@ -97,12 +98,12 @@ class SettingsApp(toga.App):
                       payment_options, toga.Divider(),
                       support, toga.Divider(),
                       tos, toga.Divider()],
-            style=Pack(direction=COLUMN, padding=10)
+            style=Pack(direction=COLUMN, padding=(20, 10, 10, 10), background_color="#ffffff")
         )
         
         main_box = toga.Box(
-            children=[header_box, contents_box],
-            style=Pack(direction=COLUMN, alignment="center", padding=10)
+            children=[header_box, toga.Divider(), contents_box],
+            style=Pack(direction=COLUMN, alignment="center", padding=10, background_color="#ffffff")
         )
 
         self.main_window.content = main_box
@@ -138,6 +139,16 @@ class SettingsApp(toga.App):
         header_box = toga.Box(
             children=[back_button, title_label],
             style=Pack(direction=ROW, alignment="center"))
+        
+        
+        
+        # Scroll box
+        scroll_box = toga.ScrollContainer(
+            content=toga.Box(
+                children=[toga.Label("Notification Settings")],
+                style=Pack(direction=COLUMN, padding=10)
+            )
+        )
     
     def placeholder_action(self, widget):  # Placeholder for action of the add job
         pass
