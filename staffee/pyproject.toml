@@ -13,14 +13,16 @@ formal_name = "staffeeapptest"
 description = "a test of the current progress of staffee application"
 long_description = """More details about the app should go here.
 """
+icon = "src/staffee/resources/main_icon/staffee" 
 sources = [
-    "src/staffee",
+    "src/staffee"
 ]
 test_sources = [
     "tests",
 ]
 
 requires = [
+    "pillow>=9.0.0"
 ]
 test_requires = [
     "pytest",
