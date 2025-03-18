@@ -152,17 +152,17 @@ class BeeWareApp(toga.App):
     def show_screen_a(self, widget=None): 
         # --- Screen A ---
         label = toga.Label("Account", style=Pack(padding=5))
-        button_to_b = toga.Button("Edit my profile", on_press=self.show_screen_b, style=Pack(padding=5))
-        button_to_c = toga.Button("Business Profile", on_press=self.show_screen_c, style=Pack(padding=5))
-        button_to_d = toga.Button("History", on_press=self.show_screen_d, style=Pack(padding=5))
-        button_to_e = toga.Button("Invite Friends", on_press=self.show_screen_e, style=Pack(padding=5))
-        button_to_f = toga.Button("Settings", on_press=self.show_screen_f, style=Pack(padding=5))
-        button_to_g = toga.Button("Contact Us", on_press=self.show_screen_g, style=Pack(padding=5))
+        editProfile_button = toga.Button("Edit my profile", on_press=self.show_screen_b, style=Pack(padding=10))
+        businessProfile_button = toga.Button("Business Profile", on_press=self.show_screen_c, style=Pack(padding=5))
+        history_button = toga.Button("History", on_press=self.show_screen_d, style=Pack(padding=5))
+        inviteFriends_button = toga.Button("Invite Friends", on_press=self.show_screen_e, style=Pack(padding=5))
+        setting_button = toga.Button("Settings", on_press=self.show_screen_f, style=Pack(padding=5))
+        contactUs_button = toga.Button("Contact Us", on_press=self.show_screen_g, style=Pack(padding=5))
         logout_button = toga.Button("Log Out", on_press=self.logout, style=Pack(padding=5))
 
         box = toga.Box(
-            children=[label, button_to_b, button_to_c, button_to_d, button_to_e, button_to_f, 
-            button_to_g, logout_button],
+            children=[label, editProfile_button, businessProfile_button, history_button, inviteFriends_button,
+                      setting_button, contactUs_button, logout_button],
             style=Pack(direction=COLUMN, alignment="center", padding=10)
         )
         self.main_window.content = box
