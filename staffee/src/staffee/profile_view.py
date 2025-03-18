@@ -65,11 +65,13 @@ class ProfileView:
             '← Back',
             on_press=self.navigate_back,
             style=Pack(
-                padding=(5, 5),
+                padding=0,
                 width=80,
-                height=30,
+                height=40,
                 background_color='#228b22',
                 color='#FFFFFF',
+                font_size = 7,
+                text_align = "center"
             )
         )
         
@@ -127,28 +129,14 @@ class ProfileView:
                 details_display,
                 button_container,
                 toga.Box(style=Pack(flex=1)),  # Spacer
+                # We could add navigation here if needed using:
+                # self.app.icon_manager.create_nav_bar(self.placeholder_action)
             ],
             style=Pack(direction=COLUMN, padding=10)
         )
         
         return main_box
         
-    def remove_selected_job(self):
-        """Remove the selected job from the data and refresh the display."""
-        if self.current_selection and self.current_selection in self.data:
-            # Remove the job from the data dictionary
-            del self.data[self.current_selection]
-        
-            # Clear the dynamic content
-            self.dynamic_content.remove(*self.dynamic_content.children)
-            self.dynamic_content.add(self.prompt_label)
-        
-            # Refresh the job buttons
-            self.refresh_job_buttons()
-        
-            # Reset current selection
-            self.current_selection = None
-
     def format_staff_details(self, staff_data):
         """Format staff data into a readable text format"""
         details = []

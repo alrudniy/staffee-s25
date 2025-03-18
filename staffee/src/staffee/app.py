@@ -4,11 +4,15 @@ from toga.style import Pack
 from toga.constants import *
 from staffee.owner_view_staff import OwnerViewStaff
 from staffee.profile_view import ProfileView
+from staffee.icon_manager import IconManager
 
 class MainApp(toga.App):
     def startup(self):
         # Create main window
         self.main_window = toga.MainWindow(title=self.formal_name)
+        
+        # Initialize icon manager
+        self.icon_manager = IconManager(self)
         
         # Create main content
         self.main_content = self.create_main_content()
@@ -25,29 +29,8 @@ class MainApp(toga.App):
         self.navigation_history = []
         self.current_view = "main"
         
-        # Debug to ensure proper initialization
-        print("MainApp started successfully")
     
     def create_main_content(self):
-        # Load icons - fix the double assignment and don't try to create directories
-        images_dir = self.paths.app / "resources" / "images"
-    
-        # Add debug print to see if the directory exists
-        print(f"Looking for images in: {images_dir}")
-        print(f"Directory exists: {os.path.exists(images_dir)}")
-    
-        try:
-            cal_icon = toga.Icon(os.path.join(images_dir, "calendar.png"))
-            home_icon = toga.Icon(os.path.join(images_dir, "home.png"))
-            chat_icon = toga.Icon(os.path.join(images_dir, "chat.png"))
-            noti_icon = toga.Icon(os.path.join(images_dir, "notification.png"))
-            user_icon = toga.Icon(os.path.join(images_dir, "user.png"))
-            print("Icons loaded successfully")
-        except Exception as e:
-            print(f"Error loading icons: {e}")
-            cal_icon = home_icon = chat_icon = noti_icon = user_icon = None
-        
-        
         # Button to open the Owner View Staff screen
         open_staff_view_button = toga.Button(
             'Open Owner View Staff',
@@ -58,90 +41,27 @@ class MainApp(toga.App):
                 height=40,
                 background_color='#228b22',
                 color='#FFFFFF',
+                font_size = 10
             )
         )
 
         # Header
         title_label = toga.Label('Main Application', style=Pack(font_size=18, font_weight='bold', padding=(20, 20, 10, 20)))
 
-        new_job_button = toga.Button(
-            '+ New job',
-            on_press=self.placeholder_action,
-            style=Pack(
-                padding=(20, 5),
-                width=100,
-                height=30,
-                background_color='#FFFFFF',
-                color='#228b22',
-            )
-        )
-
-        # Calendar button with icon handling
-        if cal_icon:
-            calendar_button = toga.Button(
-                icon=cal_icon,
-                on_press=self.placeholder_action,
-                style=Pack(padding=(20, 5), width=30, height=30)
-            )
-        else:
-            calendar_button = toga.Button(
-                '📅',
-                on_press=self.placeholder_action,
-                style=Pack(padding=(20, 5), width=30, height=30)
-            )
+        # Get action box (new job button and calendar button) from icon manager
+        action_box = self.icon_manager.create_action_box(self.placeholder_action)
 
         header_box = toga.Box(
-            children=[title_label, new_job_button, calendar_button],
+            children=[title_label, action_box],
             style=Pack(direction=ROW, alignment='center', padding=(0, 10))
         )
 
-        ############ END OF CODE INVOLVING HEADER STUFF ############
+        ############ END OF CODE INVOLVING HEADER ############
 
-        # Navigation bar
-        nav_items = [
-            ('Home', home_icon, '🏠'),
-            ('Chat', chat_icon, '💬'),
-            ('Notifications', noti_icon, '🔔'),
-            ('Account', user_icon, '👤')
-        ]
-        
-        nav_box = toga.Box(
-            style=Pack(direction=ROW, alignment='center', padding=5)
-        )
-        
-        for label, icon, fallback in nav_items:
-            if icon:
-                nav_button = toga.Button(
-                    icon=icon,
-                    on_press=self.placeholder_action,
-                    style=Pack(width=30, height=30)
-                )
-            else:
-                nav_button = toga.Button(
-                    fallback,
-                    on_press=self.placeholder_action,
-                    style=Pack(width=30, height=30)
-                )
+        ############ NAVIGATION BAR CODE HERE ################ 
 
-            label_widget = toga.Label(
-                label, 
-                style=Pack(
-                    font_size=12,
-                    padding=(5, 0, 0, 0),
-                    text_align='center'
-                )
-            )
-
-            nav_item = toga.Box(
-                children=[nav_button, label_widget],
-                style=Pack(
-                    direction=COLUMN,
-                    alignment='center',
-                    flex=1,
-                    padding=(5, 10)
-                )
-            )
-            nav_box.add(nav_item)
+        # Navigation bar - use the icon manager to create it
+        nav_box = self.icon_manager.create_nav_bar(self.placeholder_action)
         
         # Main content layout
         main_content = toga.Box(
