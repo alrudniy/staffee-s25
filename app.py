@@ -58,6 +58,15 @@ class BeeWareApp(toga.App):
 
         confirm_password_label = toga.Label("Confirm Password", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
         self.confirm_password_input = toga.PasswordInput(style=Pack(padding=(10, 10, 20, 10), font_size=15))
+        
+        user_type_label = toga.Label(
+            "I am a:",
+            style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white")
+        )
+        self.user_type_selection = toga.Selection(
+            items=["Business Owner", "Applicant"],
+            style=Pack(padding=(10, 10, 20, 10), font_size=15)
+        )
 
         create_button = toga.Button("Create Account", on_press=self.create_account, style=Pack(padding=9, background_color="green", color="white", height=50, font_size=10, font_weight="bold"))
         alreadyhaveacc = toga.Label("Already have an account?", style=Pack(font_size=12, background_color="white", padding_right=5))
@@ -68,7 +77,7 @@ class BeeWareApp(toga.App):
         self.message_label = toga.Label("", style=Pack(padding=5, color="red", background_color="white"))
 
         box = toga.Box(
-            children=[title, email_label, self.email_input, password_label, self.password_input, confirm_password_label, self.confirm_password_input, create_button, account_box, self.message_label],
+            children=[title, email_label, self.email_input, password_label, self.password_input, confirm_password_label, self.confirm_password_input, user_type_label, self.user_type_selection, create_button, account_box, self.message_label],
             style=Pack(direction=COLUMN, alignment="center", padding=10, background_color="white")
         )
         self.main_window.content = box
@@ -78,6 +87,7 @@ class BeeWareApp(toga.App):
         email = self.email_input.value
         password = self.password_input.value
         confirm_password = self.confirm_password_input.value
+        usertype = self.user_type_selection.value
 
         if not email or not password or not confirm_password:
             self.message_label.text = "All fields are required."
@@ -89,7 +99,7 @@ class BeeWareApp(toga.App):
 
         hashed_password = self.hash_password(password)
 
-        if self.insert_user(email, hashed_password):
+        if self.insert_user(email, hashed_password, usertype):
             self.message_label.text = "Account created successfully!"
             self.show_login_screen()
         else:
@@ -101,13 +111,13 @@ class BeeWareApp(toga.App):
         hashed_password = bcrypt.hashpw(plain_text_password.encode('utf-8'), salt)
         return hashed_password.decode('utf-8')
 
-    def insert_user(self, email, hashed_password):
+    def insert_user(self, email, hashed_password, usertype):
         """Insert a new user into the database."""
         try:
             conn = mysql.connector.connect(**DB_CONFIG)
             cursor = conn.cursor()
-            query = "INSERT INTO Users (email, password) VALUES (%s, %s)"
-            cursor.execute(query, (email, hashed_password))
+            query = "INSERT INTO Users (email, password, type) VALUES (%s, %s, %s)"
+            cursor.execute(query, (email, hashed_password, usertype))
             conn.commit()
             cursor.close()
             conn.close()
