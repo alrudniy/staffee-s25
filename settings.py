@@ -141,11 +141,26 @@ class SettingsApp(toga.App):
             style=Pack(direction=ROW, alignment="center"))
         
         
-        
+        # Description paragraphs
+        par1 = toga.Label("Choose what notifications you want to receive"
+        "below and we will update the settings.", style=Pack(padding=(15, 5), font_size=5))
+
+        par2 = toga.Label("Send me push notifications for contracts on these days only")
+
         # Scroll box
         scroll_box = toga.ScrollContainer(
             content=toga.Box(
-                children=[toga.Label("Notification Settings")],
+                children=[par1,
+                          toga.Label("Push Notifications", style=Pack(padding=(15, 5), font_size=15)),
+                          par2,
+                          toga.Switch("All", on_change=self.placeholder_action, value=False),
+                          toga.Switch("Monday", on_change=self.placeholder_action, value=False),
+                            toga.Switch("Tuesday", on_change=self.placeholder_action, value=False),
+                            toga.Switch("Wednesday", on_change=self.placeholder_action, value=False),
+                            toga.Switch("Thursday", on_change=self.placeholder_action, value=False),
+                            toga.Switch("Friday", on_change=self.placeholder_action, value=False),
+                            toga.Switch("Saturday", on_change=self.placeholder_action, value=False),
+                            toga.Switch("Sunday", on_change=self.placeholder_action, value=False)],
                 style=Pack(direction=COLUMN, padding=10)
             )
         )
