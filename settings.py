@@ -126,7 +126,7 @@ class SettingsApp(toga.App):
         # Back arrow button 
         back_button = toga.Button(
             icon=back_icon,
-            on_press=self.placeholder_action,
+            on_press=self.create_settings_view,
             style=Pack(padding=(20, 5), width=30, height=30, flex=1)
         )
 
@@ -147,26 +147,40 @@ class SettingsApp(toga.App):
 
         par2 = toga.Label("Send me push notifications for contracts on these days only")
 
+        switches = toga.Box(
+            children=[toga.Switch("All", on_change=self.placeholder_action, value=False),
+                      toga.Switch("Monday", on_change=self.placeholder_action, value=False),
+                      toga.Switch("Tuesday", on_change=self.placeholder_action, value=False),
+                      toga.Switch("Wednesday", on_change=self.placeholder_action, value=False),
+                      toga.Switch("Thursday", on_change=self.placeholder_action, value=False),
+                      toga.Switch("Friday", on_change=self.placeholder_action, value=False),
+                      toga.Switch("Saturday", on_change=self.placeholder_action, value=False),
+                      toga.Switch("Sunday", on_change=self.placeholder_action, value=False)],
+            style=Pack(direction=COLUMN)
+        )
+
         # Scroll box
         scroll_box = toga.ScrollContainer(
             content=toga.Box(
                 children=[par1,
                           toga.Label("Push Notifications", style=Pack(padding=(15, 5), font_size=15)),
-                          par2,
-                          toga.Switch("All", on_change=self.placeholder_action, value=False),
-                          toga.Switch("Monday", on_change=self.placeholder_action, value=False),
-                            toga.Switch("Tuesday", on_change=self.placeholder_action, value=False),
-                            toga.Switch("Wednesday", on_change=self.placeholder_action, value=False),
-                            toga.Switch("Thursday", on_change=self.placeholder_action, value=False),
-                            toga.Switch("Friday", on_change=self.placeholder_action, value=False),
-                            toga.Switch("Saturday", on_change=self.placeholder_action, value=False),
-                            toga.Switch("Sunday", on_change=self.placeholder_action, value=False)],
+                          par2, switches],
                 style=Pack(direction=COLUMN, padding=10)
             )
         )
+
+        main_box = toga.Box(
+            children=[header_box, scroll_box],
+            style=Pack(direction=COLUMN))
+        
+        self.main_window.content = main_box
     
     def placeholder_action(self, widget):  # Placeholder for action of the add job
         pass
+
+    def push_notification(self, widget, value):
+       pass
+
 
 def main():
     return SettingsApp("SettingsApp", "org.example.home")
