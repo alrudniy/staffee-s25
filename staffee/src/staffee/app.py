@@ -159,7 +159,7 @@ class MainApp(toga.App):
             if usertype == "Business Owner":
                 self.open_owner_view_staff(widget)
             else:
-                self.show_main_content()
+                self.create_main_content()
         else:
             self.message_label.text = "Invalid credentials. Please try again."
 
@@ -213,6 +213,20 @@ class MainApp(toga.App):
         )
     
     def create_main_content(self):
+        # Load icons
+        self.current_view = "main"
+        self.main_window.title = "Main Application"
+
+        images_dir = self.paths.app / "resources" / "images"
+        try:
+            cal_icon = toga.Icon(os.path.join(images_dir, "calendar.png"))
+            home_icon = toga.Icon(os.path.join(images_dir, "home.png"))
+            chat_icon = toga.Icon(os.path.join(images_dir, "chat.png"))
+            noti_icon = toga.Icon(os.path.join(images_dir, "notification.png"))
+            user_icon = toga.Icon(os.path.join(images_dir, "user.png"))
+        except Exception:
+            cal_icon = home_icon = chat_icon = noti_icon = user_icon = None
+
         # Button to open the Owner View Staff screen
         open_staff_view_button = toga.Button(
             'Open Owner View Staff',
@@ -223,9 +237,43 @@ class MainApp(toga.App):
                 height=40,
                 background_color='#228b22',
                 color='#FFFFFF',
-                font_size = 10
+                font_size=10
             )
         )
+
+        # Header
+        title_label = toga.Label('Main Application', style=Pack(font_size=18, font_weight='bold', padding=(20, 20, 10, 20)))
+        new_job_button = toga.Button('+ New job', on_press=self.placeholder_action, style=Pack(padding=(20, 5), width=100, height=30))
+        
+        # Calendar button now correctly references cal_icon
+        calendar_button = toga.Button(icon=cal_icon if cal_icon else '📅', on_press=self.placeholder_action, style=Pack(padding=(20, 5), width=30, height=30))
+
+        header_box = toga.Box(children=[title_label, new_job_button, calendar_button], style=Pack(direction=ROW, alignment='center', padding=(0, 10)))
+
+        # Navigation bar
+        nav_items = [
+            ('Home', home_icon, '🏠'),
+            ('Chat', chat_icon, '💬'),
+            ('Notifications', noti_icon, '🔔'),
+            ('Account', user_icon, '👤')
+        ]
+
+        nav_box = toga.Box(style=Pack(direction=ROW, alignment='center', padding=5))
+
+        for label, icon, fallback in nav_items:
+            nav_button = toga.Button(icon=icon if icon else fallback, on_press=self.placeholder_action, style=Pack(width=30, height=30))
+            label_widget = toga.Label(label, style=Pack(font_size=12, padding=(5, 0, 0, 0), text_align='center'))
+
+            nav_item = toga.Box(children=[nav_button, label_widget], style=Pack(direction=COLUMN, alignment='center', flex=1, padding=(5, 10)))
+            nav_box.add(nav_item)
+
+        # Main content layout
+        main_content = toga.Box(
+            children=[header_box, open_staff_view_button, toga.Box(style=Pack(flex=1)), nav_box],
+            style=Pack(direction=COLUMN, padding=20)
+        )
+
+        self.main_window.content = main_content
 
         # Header
         title_label = toga.Label('Main Application', style=Pack(font_size=18, font_weight='bold', padding=(20, 20, 10, 20)))
