@@ -145,25 +145,26 @@ class SettingsApp(toga.App):
         par1 = toga.Label("Choose what notifications you want to receive"
         "below and we will update the settings.", style=Pack(padding=(15, 5), font_size=5))
 
+        sub1 = toga.Label("Push Notifications", style=Pack(padding=(15, 5), font_size=15))
+
         par2 = toga.Label("Send me push notifications for contracts on these days only")
 
         switches = toga.Box(
-            children=[toga.Switch("All", on_change=self.placeholder_action, value=False),
-                      toga.Switch("Monday", on_change=self.placeholder_action, value=False),
-                      toga.Switch("Tuesday", on_change=self.placeholder_action, value=False),
-                      toga.Switch("Wednesday", on_change=self.placeholder_action, value=False),
-                      toga.Switch("Thursday", on_change=self.placeholder_action, value=False),
-                      toga.Switch("Friday", on_change=self.placeholder_action, value=False),
-                      toga.Switch("Saturday", on_change=self.placeholder_action, value=False),
-                      toga.Switch("Sunday", on_change=self.placeholder_action, value=False)],
+            children=[toga.Switch("All", id=0, on_change=self.push_notification, value=False),
+                      toga.Switch("Monday", id=1, on_change=self.placeholder_action, value=False),
+                      toga.Switch("Tuesday", id=2, on_change=self.placeholder_action, value=False),
+                      toga.Switch("Wednesday", id=3, on_change=self.placeholder_action, value=False),
+                      toga.Switch("Thursday", id=4, on_change=self.placeholder_action, value=False),
+                      toga.Switch("Friday", id=5, on_change=self.placeholder_action, value=False),
+                      toga.Switch("Saturday", id=6, on_change=self.placeholder_action, value=False),
+                      toga.Switch("Sunday", id=7, on_change=self.placeholder_action, value=False)],
             style=Pack(direction=COLUMN)
         )
 
         # Scroll box
         scroll_box = toga.ScrollContainer(
             content=toga.Box(
-                children=[par1,
-                          toga.Label("Push Notifications", style=Pack(padding=(15, 5), font_size=15)),
+                children=[par1, sub1,
                           par2, switches],
                 style=Pack(direction=COLUMN, padding=10)
             )
@@ -177,9 +178,21 @@ class SettingsApp(toga.App):
     
     def placeholder_action(self, widget):  # Placeholder for action of the add job
         pass
-
+    
+    
     def push_notification(self, widget, value):
-       pass
+        if value==True:
+            for i in range(1, 8):
+                widget = self.main_window.content.children[1].children[3].children[i]
+                widget.value = True
+                widget.enabled = False
+        else:
+            for i in range(1, 8):
+                widget = self.main_window.content.children[1].children[3].children[i]
+                widget.value = False
+                widget.enabled = True
+
+
 
 
 def main():
