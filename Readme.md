@@ -18,6 +18,9 @@ source venv/bin/activate
 ## Install Dependencies. With the virtual environment active, install your project’s dependencies from your requirements.txt.
 pip install -r requirements.txt
 
-## Start the app:
-python app.py
-- Note that username and password are hardcoded in app.py
+
+# In order to run the project with briefcase (android)
+# 1. ensure you are in the child folder of staffee (if not -> run 'cd staffee')
+# 2. 'briefcase create android' -> briefcase downloads java JDK + android SDK
+# 3. 'briefcase build android' -> briefcase build command compiles project to into android APK app file
+# 4. 'briefcase run android' -> runs the application 
