@@ -22,8 +22,11 @@ test_sources = [
 ]
 
 requires = [
-    "pillow>=9.0.0"
+    "pillow>=9.0.0",
+    "mysql-connector>=1.5.0",
+    "passlib>=1.7.4"  
 ]
+
 test_requires = [
     "pytest",
 ]
@@ -165,7 +168,9 @@ requires = [
 [tool.briefcase.app.staffee.android]
 requires = [
     "toga-android~=0.4.7",
+    "passlib>=1.7.4"  # Add passlib specifically for Android
 ]
+
 
 base_theme = "Theme.MaterialComponents.Light.DarkActionBar"
 

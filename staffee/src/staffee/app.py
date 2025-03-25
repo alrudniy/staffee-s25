@@ -1,5 +1,3 @@
-import os
-import bcrypt
 import toga
 import mysql.connector
 from toga.style import Pack
@@ -7,6 +5,7 @@ from toga.constants import COLUMN, ROW
 from staffee.owner_view_staff import OwnerViewStaff
 from staffee.profile_view import ProfileView
 from staffee.icon_manager import IconManager
+from passlib.hash import pbkdf2_sha256  # Use passlib's pbkdf2_sha256 hasher (pure Python)
 
 # Database connection details
 DB_CONFIG = {
@@ -23,16 +22,15 @@ class MainApp(toga.App):
         # Create main window
         self.main_window = toga.MainWindow(title=self.formal_name)
         
-
-        # Initialize icon manager
+        # Initialize icon manager - do this early so icons are available throughout the app
         self.icon_manager = IconManager(self)
-        
-        # Create main content
-        self.main_content = self.create_main_content()
         
         # Initialize view modules
         self.staff_view = OwnerViewStaff(self)
         self.profile_view = ProfileView(self)
+        
+        # Create main content
+        self.main_content = self.create_main_content()
 
         # Show login screen first
         self.show_login_screen()
@@ -58,7 +56,6 @@ class MainApp(toga.App):
         account_box = toga.Box(children=[donthaveacc, create_account_label], style=Pack(direction="row", alignment="center", padding=10, background_color="white"))
 
         self.message_label = toga.Label("", style=Pack(padding=5, color="red", background_color="white"))
-
 
         box = toga.Box(
             children=[title, email_label, self.username_input, password_label, self.password_input, login_button, account_box, self.message_label],
@@ -126,10 +123,18 @@ class MainApp(toga.App):
             self.message_label.text = "Error creating account. Try again."
 
     def hash_password(self, plain_text_password):
-        """Hash the password securely."""
-        salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(plain_text_password.encode('utf-8'), salt)
-        return hashed_password.decode('utf-8')
+        """
+        Hash the password securely using passlib's pbkdf2_sha256.
+        This is a pure Python implementation that works on all platforms including mobile.
+        
+        Args:
+            plain_text_password (str): The plain text password to hash
+            
+        Returns:
+            str: A secure hash of the password
+        """
+        # Use passlib's pbkdf2_sha256 hasher (pure Python implementation)
+        return pbkdf2_sha256.hash(plain_text_password)
 
     def insert_user(self, email, hashed_password, usertype):
         """Insert a new user into the database."""
@@ -147,7 +152,6 @@ class MainApp(toga.App):
             self.message_label.text = f"Database error: {err}"
             return False
 
-
     def login(self, widget):
         """Handle user login."""
         username = self.username_input.value
@@ -164,12 +168,21 @@ class MainApp(toga.App):
             self.message_label.text = "Invalid credentials. Please try again."
 
     def authenticate_user(self, email, password):
-        """Check the database for user credentials and return the user type."""
+        """
+        Check the database for user credentials and return the user type.
+        
+        Args:
+            email: The user's email address
+            password: The user's password
+            
+        Returns:
+            The user type if authentication is successful, None otherwise
+        """
         try:
             conn = mysql.connector.connect(**DB_CONFIG)
             cursor = conn.cursor(dictionary=True)
 
-            # Modified query to also fetch the user type
+            # Query to fetch the user's password and type
             query = "SELECT password, type FROM Users WHERE email = %s"
             cursor.execute(query, (email,))
             user = cursor.fetchone()
@@ -180,7 +193,8 @@ class MainApp(toga.App):
 
             print(f"Retrieved user: {user}")  # Debugging
 
-            if bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+            # Use passlib's verify method instead of bcrypt.checkpw
+            if pbkdf2_sha256.verify(password, user['password']):
                 return user['type']  # Return the user type if credentials are correct
             else:
                 print("Password does not match.")  # Debugging
@@ -190,29 +204,21 @@ class MainApp(toga.App):
             return None
     
     def show_main_content(self):
-        """Replace login screen with main app content."""
+        """
+        Replace login screen with main app content.
+        Uses the main content created by create_main_content().
+        """
         self.current_view = "main"
         self.main_window.title = "Main Application"
-
-        # Load icons
-        images_dir = self.paths.app / "resources" / "images"
-        try:
-            cal_icon = toga.Icon(os.path.join(images_dir, "calendar.png"))
-            home_icon = toga.Icon(os.path.join(images_dir, "home.png"))
-            chat_icon = toga.Icon(os.path.join(images_dir, "chat.png"))
-            noti_icon = toga.Icon(os.path.join(images_dir, "notification.png"))
-            user_icon = toga.Icon(os.path.join(images_dir, "user.png"))
-        except Exception:
-            cal_icon = home_icon = chat_icon = noti_icon = user_icon = None
-        
-        # Button to open staff view
-        open_staff_view_button = toga.Button(
-            'Open Owner View Staff',
-            on_press=self.open_owner_view_staff,
-            style=Pack(padding=(20, 5), width=200, height=40, background_color='#228b22', color='#FFFFFF')
-        )
+        self.main_window.content = self.main_content
     
     def create_main_content(self):
+        """
+        Create the main content layout including header, main area, and navigation bar.
+        
+        Returns:
+            toga.Box: The main content container
+        """
         # Button to open the Owner View Staff screen
         open_staff_view_button = toga.Button(
             'Open Owner View Staff',
@@ -223,47 +229,28 @@ class MainApp(toga.App):
                 height=40,
                 background_color='#228b22',
                 color='#FFFFFF',
-                font_size = 10
+                font_size=10
             )
         )
 
-        # Header
-        title_label = toga.Label('Main Application', style=Pack(font_size=18, font_weight='bold', padding=(20, 20, 10, 20)))
-        new_job_button = toga.Button('+ New job', on_press=self.placeholder_action, style=Pack(padding=(20, 5), width=100, height=30))
-
-        # Calendar button
-        calendar_button = toga.Button(icon=cal_icon if cal_icon else '📅', on_press=self.placeholder_action, style=Pack(padding=(20, 5), width=30, height=30))
-
-        header_box = toga.Box(children=[title_label, new_job_button, calendar_button], style=Pack(direction=ROW, alignment='center', padding=(0, 10)))
-
-        # Navigation bar
-        nav_items = [
-            ('Home', home_icon, '🏠'),
-            ('Chat', chat_icon, '💬'),
-            ('Notifications', noti_icon, '🔔'),
-            ('Account', user_icon, '👤')
-        ]
-
-        nav_box = toga.Box(style=Pack(direction=ROW, alignment='center', padding=5))
-        
-        for label, icon, fallback in nav_items:
-            nav_button = toga.Button(icon=icon if icon else fallback, on_press=self.placeholder_action, style=Pack(width=30, height=30))
-            label_widget = toga.Label(label, style=Pack(font_size=12, padding=(5, 0, 0, 0), text_align='center'))
-
-            nav_item = toga.Box(children=[nav_button, label_widget], style=Pack(direction=COLUMN, alignment='center', flex=1, padding=(5, 10)))
-            nav_box.add(nav_item)
+        # Header with title
+        title_label = toga.Label(
+            'Main Application', 
+            style=Pack(
+                font_size=18, 
+                font_weight='bold', 
+                padding=(20, 20, 10, 20)
+            )
+        )
 
         # Get action box (new job button and calendar button) from icon manager
         action_box = self.icon_manager.create_action_box(self.placeholder_action)
 
+        # Combine title and action box into header
         header_box = toga.Box(
             children=[title_label, action_box],
             style=Pack(direction=ROW, alignment='center', padding=(0, 10))
         )
-
-        ############ END OF CODE INVOLVING HEADER ############
-
-        ############ NAVIGATION BAR CODE HERE ################ 
 
         # Navigation bar - use the icon manager to create it
         nav_box = self.icon_manager.create_nav_bar(self.placeholder_action)
@@ -274,10 +261,13 @@ class MainApp(toga.App):
             style=Pack(direction=COLUMN, padding=20)
         )
 
-        self.main_window.content = main_content
+        return main_content
 
     def open_owner_view_staff(self, widget):
-        """Navigate to the Owner View Staff screen."""
+        """
+        Navigate to the Owner View Staff screen.
+        Adds current view to navigation history for back navigation.
+        """
         try:
             self.navigation_history.append(self.current_view)
             self.current_view = "staff_view"
@@ -288,8 +278,15 @@ class MainApp(toga.App):
             print(f"Error in open_owner_view_staff: {e}")
 
     def placeholder_action(self, widget):
-        """Placeholder for button actions."""
+        """
+        Placeholder for button actions that are not yet implemented.
+        Useful for testing and UI development.
+        """
         print("Placeholder action triggered")
 
 def main():
+    """
+    Main entry point for the application.
+    Returns the application instance.
+    """
     return MainApp("Staffee Demo", "org.example.demoApp")
