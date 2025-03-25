@@ -210,6 +210,7 @@ class MainApp(toga.App):
             'Open Owner View Staff',
             on_press=self.open_owner_view_staff,
             style=Pack(padding=(20, 5), width=200, height=40, background_color='#228b22', color='#FFFFFF')
+        )
     
     def create_main_content(self):
         # Button to open the Owner View Staff screen
