@@ -6,6 +6,7 @@ from toga.style import Pack
 from toga.constants import COLUMN, ROW
 from staffee.owner_view_staff import OwnerViewStaff
 from staffee.profile_view import ProfileView
+from staffee.icon_manager import IconManager
 
 # Database connection details
 DB_CONFIG = {
@@ -22,7 +23,14 @@ class MainApp(toga.App):
         # Create main window
         self.main_window = toga.MainWindow(title=self.formal_name)
         
-        # Initialize views
+
+        # Initialize icon manager
+        self.icon_manager = IconManager(self)
+        
+        # Create main content
+        self.main_content = self.create_main_content()
+        
+        # Initialize view modules
         self.staff_view = OwnerViewStaff(self)
         self.profile_view = ProfileView(self)
 
@@ -202,6 +210,20 @@ class MainApp(toga.App):
             'Open Owner View Staff',
             on_press=self.open_owner_view_staff,
             style=Pack(padding=(20, 5), width=200, height=40, background_color='#228b22', color='#FFFFFF')
+    
+    def create_main_content(self):
+        # Button to open the Owner View Staff screen
+        open_staff_view_button = toga.Button(
+            'Open Owner View Staff',
+            on_press=self.open_owner_view_staff,
+            style=Pack(
+                padding=(20, 5),
+                width=200,
+                height=40,
+                background_color='#228b22',
+                color='#FFFFFF',
+                font_size = 10
+            )
         )
 
         # Header
@@ -230,6 +252,21 @@ class MainApp(toga.App):
             nav_item = toga.Box(children=[nav_button, label_widget], style=Pack(direction=COLUMN, alignment='center', flex=1, padding=(5, 10)))
             nav_box.add(nav_item)
 
+        # Get action box (new job button and calendar button) from icon manager
+        action_box = self.icon_manager.create_action_box(self.placeholder_action)
+
+        header_box = toga.Box(
+            children=[title_label, action_box],
+            style=Pack(direction=ROW, alignment='center', padding=(0, 10))
+        )
+
+        ############ END OF CODE INVOLVING HEADER ############
+
+        ############ NAVIGATION BAR CODE HERE ################ 
+
+        # Navigation bar - use the icon manager to create it
+        nav_box = self.icon_manager.create_nav_bar(self.placeholder_action)
+        
         # Main content layout
         main_content = toga.Box(
             children=[header_box, open_staff_view_button, toga.Box(style=Pack(flex=1)), nav_box],

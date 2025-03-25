@@ -14,6 +14,7 @@ import toga
 from toga.style import Pack
 from toga.constants import *
 from staffee.profile_view import ProfileView
+from staffee.resizeimg import resize_profile_pictures
 
 # ensuring that the class is exportable (CLAUDE)
 __all__ = ['OwnerViewStaff']
@@ -40,100 +41,9 @@ class OwnerViewStaff:
                 "hourly rate": f"${55:.2f}/h", "date": None,
                 "start time": None, "end time": None
             },
-            
-            "job 2 at pharmacy 1": {
-                "ID": 1, "name": "Arthur Read", "recommended": 0,
-                "hourly rate": f"${25:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 2 at pharmacy 2": {
-                "ID": 2, "name": "Tony Barks", "recommended": 5.4,
-                "hourly rate": f"${75:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 2 at pharmacy 3": {
-                "ID": 3, "name": "Howard Hughes", "recommended": 4,
-                "hourly rate": f"${55:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            
-            "job 3 at pharmacy 1": {
-                "ID": 1, "name": "John Smith", "recommended": 0,
-                "hourly rate": f"${25:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 3 at pharmacy 2": {
-                "ID": 2, "name": "Luka Doncic", "recommended": 5.4,
-                "hourly rate": f"${75:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 3 at pharmacy 3": {
-                "ID": 3, "name": "Alex Len", "recommended": 4,
-                "hourly rate": f"${55:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            
-            "job 4 at pharmacy 1": {
-                "ID": 1, "name": "Arthur Smith", "recommended": 0,
-                "hourly rate": f"${25:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 5 at pharmacy 2": {
-                "ID": 2, "name": "Vincent Doom", "recommended": 5.4,
-                "hourly rate": f"${75:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 6 at pharmacy 3": {
-                "ID": 3, "name": "Frank Castle", "recommended": 4,
-                "hourly rate": f"${55:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            
-            "job 18 at pharmacy 1": {
-                "ID": 1, "name": "Arthur Smith", "recommended": 0,
-                "hourly rate": f"${25:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 13 at pharmacy 2": {
-                "ID": 2, "name": "Vincent Doom", "recommended": 5.4,
-                "hourly rate": f"${75:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 15 at pharmacy 3": {
-                "ID": 3, "name": "Frank Castle", "recommended": 4,
-                "hourly rate": f"${55:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            
-            "job 1 at pharmacy 11": {
-                "ID": 1, "name": "Arthur Smith", "recommended": 0,
-                "hourly rate": f"${25:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 1 at pharmacy 23": {
-                "ID": 2, "name": "Vincent Doom", "recommended": 5.4,
-                "hourly rate": f"${75:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 1 at pharmacy 30": {
-                "ID": 3, "name": "Frank Castle", "recommended": 4,
-                "hourly rate": f"${55:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            
-            "job 1 at pharmacy 14": {
-                "ID": 1, "name": "Arthur Smith", "recommended": 0,
-                "hourly rate": f"${25:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 1 at pharmacy 23": {
-                "ID": 2, "name": "Vincent Doom", "recommended": 5.4,
-                "hourly rate": f"${75:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 1 at pharmacy 35": {
-                "ID": 3, "name": "Frank Castle", "recommended": 4,
-                "hourly rate": f"${55:.2f}/h", "date": None,
+            "job 43 at pharmacy ABC": {
+                "ID": 6, "name": "John Doe", "recommended": 9,
+                "hourly rate": f"${15:.2f}/h", "date": None,
                 "start time": None, "end time": None
             }
         }
@@ -142,45 +52,26 @@ class OwnerViewStaff:
         self.profile_images = {}
         try:
             # Try to use the app's default profile image if available
-            images_dir = self.app.paths.app / "resources" / "images"
-            default_profile_path = os.path.join(images_dir, "defaultpfp.png")
+            profile_pics_dir = self.app.paths.app / "resources" / "profile_pics"
+
+            # Resize profile pictures during initialization
+            resize_profile_pictures(profile_pics_dir)
+
+            default_profile_path = os.path.join(profile_pics_dir, "defaultpfp.png")
+
             default_image = toga.ImageView(default_profile_path)
-            default_image.style.update(width=50, height=80, padding=7)
+            
+            default_image.style.update(width=35, height=35, padding=5)
             # Map each ID to the default profile picture
-            self.profile_images = {1: default_image, 2: default_image, 3: default_image}
+            self.profile_images = {1: default_image, 2: default_image, 3: default_image, 4: default_image, 6: default_image}
         except Exception as e:
             print(f"Error loading profile images: {e}")
             self.profile_images = {}
 
     def create_content(self):
-
-        # Back button to return to main view
-        back_button = toga.Button(
-            '← Back',
-            on_press=self.navigate_back,
-            style=Pack(
-                padding=(5, 5),
-                width=80,
-                height=30,
-                background_color='#228b22',
-                color='#FFFFFF',
-            )
-        )
+        # Get back button from icon manager
+        back_button = self.app.icon_manager.create_back_button(self.navigate_back)
         
-        # Get the application's image directory
-        images_dir = self.app.paths.app / "resources" / "images"
-        
-        # Create paths for the icons with error handling
-        try:
-            cal_icon = toga.Icon(os.path.join(images_dir, "calendar.png"))
-            chat_icon = toga.Icon(os.path.join(images_dir, "chat.png"))
-            home_icon = toga.Icon(os.path.join(images_dir, "home.png"))
-            noti_icon = toga.Icon(os.path.join(images_dir, "notification.png"))
-            user_icon = toga.Icon(os.path.join(images_dir, "user.png"))
-        except Exception as e:
-            print(f"Error loading icons: {e}")
-            cal_icon = chat_icon = home_icon = noti_icon = user_icon = None
-
         # Header
         title_label = toga.Label('Active Staff View', style=Pack(font_size=18, font_weight='bold', padding=(20, 20, 10, 20)))
         
@@ -190,36 +81,8 @@ class OwnerViewStaff:
             style=Pack(direction=ROW, alignment='center', padding=(0, 10))
         )
 
-        new_job_button = toga.Button(
-            '+ New job',
-            on_press=self.placeholder_action,
-            style=Pack(
-                padding=(20, 5),
-                width=100,
-                height=30,
-                background_color='#FFFFFF',
-                color='#228b22',
-            )
-        )
-        
-        # Calendar button with icon handling
-        if cal_icon:
-            calendar_button = toga.Button(
-                icon=cal_icon,
-                on_press=self.placeholder_action,
-                style=Pack(padding=(20, 5), width=30, height=30)
-            )
-        else:
-            calendar_button = toga.Button(
-                '📅',
-                on_press=self.placeholder_action,
-                style=Pack(padding=(20, 5), width=30, height=30)
-            )
-        
-        action_box = toga.Box(
-            children=[new_job_button, calendar_button],
-            style=Pack(direction=ROW, alignment='center', padding=(0, 10))
-        )
+        # Get action box (new job and calendar) from icon manager
+        action_box = self.app.icon_manager.create_action_box(self.placeholder_action)
 
         # Post label
         post_label = toga.Label('Active staff', style=Pack(padding=(10, 20)))
@@ -227,7 +90,7 @@ class OwnerViewStaff:
         # Add a prompt label
         self.prompt_label = toga.Label(
             'Select a job to view details',
-            style=Pack(padding=20, text_align='center')
+            style=Pack(padding=10, text_align='center')
         )
 
         # Create a box for the scrollable content
@@ -246,51 +109,8 @@ class OwnerViewStaff:
             vertical=True      # Enable vertical scrolling
         )
 
-        # Navigation bar with vertically aligned icons and labels
-        nav_items = [
-            ('Home', home_icon, '🏠'),
-            ('Chat', chat_icon, '💬'),
-            ('Notifications', noti_icon, '🔔'),
-            ('Account', user_icon, '👤')
-        ]
-        
-        nav_box = toga.Box(
-            style=Pack(direction=ROW, alignment='center', padding=5)
-        )
-        
-        for label, icon, fallback in nav_items:
-            if icon:
-                nav_button = toga.Button(
-                    icon=icon,
-                    on_press=self.placeholder_action,
-                    style=Pack(width=30, height=30)
-                )
-            else:
-                nav_button = toga.Button(
-                    fallback,
-                    on_press=self.placeholder_action,
-                    style=Pack(width=30, height=30)
-                )
-
-            label_widget = toga.Label(
-                label, 
-                style=Pack(
-                    font_size=12,
-                    padding=(5, 0, 0, 0),
-                    text_align='center'
-                )
-            )
-
-            nav_item = toga.Box(
-                children=[nav_button, label_widget],
-                style=Pack(
-                    direction=COLUMN,
-                    alignment='center',
-                    flex=1,
-                    padding=(5, 10)
-                )
-            )
-            nav_box.add(nav_item)
+        # Use the icon manager to create the navigation bar
+        nav_box = self.app.icon_manager.create_nav_bar(self.placeholder_action)
 
         # Create a container for dynamic content
         self.dynamic_content = toga.Box(
@@ -385,10 +205,10 @@ class OwnerViewStaff:
         # Remove all children from dynamic content
         self.dynamic_content.remove(*self.dynamic_content.children)
         
-            # Add back the prompt label
+        # Add back the prompt label
         self.dynamic_content.add(self.prompt_label)
         
-            # Clear current selection
+        # Clear current selection
         self.current_selection = None
     
     def remove_selected_job(self):
