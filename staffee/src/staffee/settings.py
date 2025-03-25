@@ -180,17 +180,15 @@ class SettingsApp(toga.App):
         pass
     
     
-    def push_notification(self, widget, value):
-        if value==True:
-            for i in range(1, 8):
-                widget = self.main_window.content.children[1].children[3].children[i]
-                widget.value = True
-                widget.enabled = False
-        else:
-            for i in range(1, 8):
-                widget = self.main_window.content.children[1].children[3].children[i]
-                widget.value = False
-                widget.enabled = True
+    def push_notification(self, widget):
+        toggle_value = widget.value
+        print(widget.value)
+
+        switches_box = self.main_window.content.children[1].content.children[3]
+        for child in switches_box.children:
+            if child.id != 0:
+                child.value = toggle_value
+                child.enabled = not toggle_value
 
 
 
