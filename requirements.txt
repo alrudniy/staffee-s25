@@ -1,3 +1,5 @@
 briefcase
 toga
 pillow
+mysql.connector
+passlib
