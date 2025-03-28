@@ -26,7 +26,7 @@ class MainApp(toga.App):
         self.icon_manager = IconManager(self)
         
         # Initialize view modules
-        self.staff_view = OwnerViewStaff(self)
+        self.staff_view = OwnerViewStaff(self, DB_CONFIG)
         self.profile_view = ProfileView(self)
         
         # Create main content
@@ -40,6 +40,19 @@ class MainApp(toga.App):
         self.navigation_history = []
         self.current_view = "login"
     
+    def validate_email(self,email):
+        """
+        simple email validation for mobile/constrained environments, cannot tell if fake or real.
+
+        Args:
+            email (str): Email address to validate
+    
+        Returns:
+            bool: True if email format looks valid, False otherwise 
+        """
+        # Basic checks: contains @, has something before and after @
+        return isinstance(email, str) and '@' in email and '.' in email.split('@')[1]
+        
     def show_login_screen(self):
         """Display the login screen."""
         title = toga.Label("Sign In", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
@@ -67,8 +80,15 @@ class MainApp(toga.App):
     def show_create_account_screen(self, widget):
         """Display the Create Account screen."""
         title = toga.Label("Create a\nfree account", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
+
         email_label = toga.Label("Email", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
         self.email_input = toga.TextInput(placeholder="your.email@example.com", style=Pack(padding=(10, 10, 20, 10), font_size=15))
+
+        first_name_label = toga.Label("First name", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
+        self.first_name_input = toga.TextInput(placeholder="i.e. John", style=Pack(padding=(10, 10, 20, 10), font_size=15))
+
+        last_name_label = toga.Label("Last name", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
+        self.last_name_input = toga.TextInput(placeholder="i.e. Doe", style=Pack(padding=(10, 10, 20, 10), font_size=15))
 
         password_label = toga.Label("Password", style=Pack(padding=(0, 0, 0, 8), font_weight="bold", font_size=10, background_color="white"))
         self.password_input = toga.PasswordInput(style=Pack(padding=(10, 10, 20, 10), font_size=15))
@@ -94,33 +114,49 @@ class MainApp(toga.App):
         self.message_label = toga.Label("", style=Pack(padding=5, color="red", background_color="white"))
 
         box = toga.Box(
-            children=[title, email_label, self.email_input, password_label, self.password_input, confirm_password_label, self.confirm_password_input, user_type_label, self.user_type_selection, create_button, account_box, self.message_label],
+            children=[title, email_label, self.email_input, first_name_label, self.first_name_input,
+                    last_name_label, self.last_name_input, password_label, self.password_input, 
+                    confirm_password_label, self.confirm_password_input, user_type_label, self.user_type_selection, create_button, account_box, self.message_label],
             style=Pack(direction=COLUMN, alignment="center", padding=10, background_color="white")
         )
         self.main_window.content = box
 
     def create_account(self, widget):
         """Handle account creation."""
+        first_name = self.first_name_input.value
+        last_name = self.last_name_input.value
         email = self.email_input.value
         password = self.password_input.value
         confirm_password = self.confirm_password_input.value
         usertype = self.user_type_selection.value
 
-        if not email or not password or not confirm_password:
+        # Default profile picture path
+        default_pfp_path = "src/staffee/resources/profile_pics/defaultpfp.png"
+
+        # Validate all fields are filled
+        if not first_name or not last_name or not email or not password or not confirm_password:
             self.message_label.text = "All fields are required."
             return
 
+        if self.validate_email(email) == False:
+            self.message_label.text = "Enter a valid email address"
+            return
+
+        # Check if passwords match
         if password != confirm_password:
             self.message_label.text = "Passwords do not match."
             return
-
+            
+        # Hash the password
         hashed_password = self.hash_password(password)
 
-        if self.insert_user(email, hashed_password, usertype):
+        # Attempt to insert user with default profile picture path
+        if self.insert_user(email, hashed_password, usertype, first_name, last_name, default_pfp_path):
             self.message_label.text = "Account created successfully!"
             self.show_login_screen()
         else:
             self.message_label.text = "Error creating account. Try again."
+
 
     def hash_password(self, plain_text_password):
         """
@@ -136,13 +172,13 @@ class MainApp(toga.App):
         # Use passlib's pbkdf2_sha256 hasher (pure Python implementation)
         return pbkdf2_sha256.hash(plain_text_password)
 
-    def insert_user(self, email, hashed_password, usertype):
+    def insert_user(self, email, hashed_password, usertype, first_name, last_name, pfp_path):
         """Insert a new user into the database."""
         try:
             conn = mysql.connector.connect(**DB_CONFIG)
             cursor = conn.cursor()
-            query = "INSERT INTO Users (email, password, type) VALUES (%s, %s, %s)"
-            cursor.execute(query, (email, hashed_password, usertype))
+            query = "INSERT INTO Users (email, password, type, first_name, last_name, pfp_path) VALUES (%s, %s, %s, %s, %s, %s)"
+            cursor.execute(query, (email, hashed_password, usertype, first_name, last_name, pfp_path))
             conn.commit()
             cursor.close()
             conn.close()
@@ -161,7 +197,7 @@ class MainApp(toga.App):
         
         if usertype:
             if usertype == "Business Owner":
-                self.open_owner_view_staff(widget)
+                self.open_owner_view_staff(widget, DB_CONFIG)
             else:
                 self.show_main_content()
         else:
@@ -222,7 +258,7 @@ class MainApp(toga.App):
         # Button to open the Owner View Staff screen
         open_staff_view_button = toga.Button(
             'Open Owner View Staff',
-            on_press=self.open_owner_view_staff,
+            on_press=lambda widget: self.open_owner_view_staff(widget),  # Pass widget
             style=Pack(
                 padding=(20, 5),
                 width=200,
@@ -263,7 +299,7 @@ class MainApp(toga.App):
 
         return main_content
 
-    def open_owner_view_staff(self, widget):
+    def open_owner_view_staff(self, widget, db_details = DB_CONFIG):
         """
         Navigate to the Owner View Staff screen.
         Adds current view to navigation history for back navigation.
@@ -271,6 +307,9 @@ class MainApp(toga.App):
         try:
             self.navigation_history.append(self.current_view)
             self.current_view = "staff_view"
+
+            self.staff_view = OwnerViewStaff(self, db_details)
+
             staff_content = self.staff_view.create_content()
             self.main_window.title = "Staff View"
             self.main_window.content = staff_content

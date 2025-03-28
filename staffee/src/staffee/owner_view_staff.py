@@ -11,6 +11,7 @@ with a description that will include:
 '''
 import os
 import toga
+import mysql.connector
 from toga.style import Pack
 from toga.constants import *
 from staffee.profile_view import ProfileView
@@ -20,53 +21,112 @@ from staffee.resizeimg import resize_profile_pictures
 __all__ = ['OwnerViewStaff']
 
 class OwnerViewStaff:
-    def __init__(self, app):
+    def __init__(self, app, DB_details):
         # Store the app instance
         self.app = app
+        self.DB_details = DB_details
 
-        # Initialize data
-        self.data = {
-            "job 1 at pharmacy 1": {
-                "ID": 1, "name": "Arthur Smith", "recommended": 0,
-                "hourly rate": f"${25:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 1 at pharmacy 2": {
-                "ID": 2, "name": "Vincent Doom", "recommended": 5.4,
-                "hourly rate": f"${75:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 1 at pharmacy 3": {
-                "ID": 3, "name": "Frank Castle", "recommended": 4,
-                "hourly rate": f"${55:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            },
-            "job 43 at pharmacy ABC": {
-                "ID": 6, "name": "John Doe", "recommended": 9,
-                "hourly rate": f"${15:.2f}/h", "date": None,
-                "start time": None, "end time": None
-            }
-        }
+        # Connect to the database
+        self.db_conn = mysql.connector.connect(**DB_details)
+        
+        # Fetch staff data from the database
+        self.fetch_staff_data()
 
-        # Create image dictionary mapping IDs to profile pictures
-        self.profile_images = {}
+    def fetch_staff_data(self):
+        """Fetch staff data from the database"""
         try:
-            # Try to use the app's default profile image if available
-            profile_pics_dir = self.app.paths.app / "resources" / "profile_pics"
-
-            # Resize profile pictures during initialization
-            resize_profile_pictures(profile_pics_dir)
-
-            default_profile_path = os.path.join(profile_pics_dir, "defaultpfp.png")
-
-            default_image = toga.ImageView(default_profile_path)
+            # Create a cursor
+            cursor = self.db_conn.cursor(dictionary=True)
             
-            default_image.style.update(width=35, height=35, padding=5)
-            # Map each ID to the default profile picture
-            self.profile_images = {1: default_image, 2: default_image, 3: default_image, 4: default_image, 6: default_image}
-        except Exception as e:
-            print(f"Error loading profile images: {e}")
+            # SQL query to fetch required columns
+            query = """
+            SELECT first_name, last_name, UID, desired_hourly_rate, recommendations 
+            FROM applicant_info
+            WHERE job_listings = True  # Assuming there's an active column to filter active staff
+            """
+            
+            # Execute the query
+            cursor.execute(query)
+            
+            # Fetch all results
+            staff_results = cursor.fetchall()
+            
+            # Convert results to a dictionary for existing code compatibility
+            self.data = {}
             self.profile_images = {}
+            
+            for staff in staff_results:
+                # Create a unique key for each staff member
+                job_key = f"{staff['first_name']} {staff['last_name']}"
+                
+                # Store staff data
+                self.data[job_key] = {
+                    'name': job_key,
+                    'ID': staff['UID'],
+                    'first_name': staff['first_name'],
+                    'last_name': staff['last_name'],
+                    'hourly_rate': staff['desired_hourly_rate'],
+                    'recommendations': staff['recommendations']
+                }
+                
+                # Fetch and store profile image if available
+                profile_pic = self.fetch_profile_image(staff['UID'])
+                if profile_pic:
+                    self.profile_images[staff['UID']] = profile_pic
+            
+            # Close the cursor
+            cursor.close()
+        
+        except mysql.connector.Error as err:
+            print(f"Error fetching staff data: {err}")
+            self.data = {}
+            self.profile_images = {}
+
+    def fetch_profile_image(self, staff_id):
+        """Fetch profile image for a given staff ID"""
+        try:
+            cursor = self.db_conn.cursor()
+            query = "SELECT profile_image FROM staff WHERE UID = %s"
+            cursor.execute(query, (staff_id,))
+            result = cursor.fetchone()
+            cursor.close()
+            
+            return result[0] if result and result[0] else None
+        
+        except mysql.connector.Error as err:
+            print(f"Error fetching profile image: {err}")
+            return None
+
+    def generate_job_buttons(self):
+        """Generate individual job buttons for scrollable content"""
+        # Sort job keys for better organization
+        sorted_keys = sorted(self.data.keys())
+        
+        # Add job buttons to the scrollable content
+        for job_key in sorted_keys:
+            job_data = self.data[job_key]
+            
+            # Format button text to show key information
+            button_text = (
+                f"{job_data['first_name']} {job_data['last_name']} | "
+                f"ID: {job_data['ID']} | "
+                f"Rate: ${job_data['hourly_rate']}/hr | "
+                f"Recommendations: {job_data['recommendations']}"
+            )
+            
+            job_button = toga.Button(
+                button_text,
+                on_press=lambda widget, key=job_key: self.select_job(key),
+                style=Pack(
+                padding=(3, 6, 3, 6),  # top, right, bottom, left padding
+                width=400,  # Increased width to accommodate more text
+                height=60,  # Slightly increased height
+                alignment='left',
+                background_color='#f0f0f0'
+            )
+            )
+            
+            self.scrollable_content.add(job_button)
 
     def create_content(self):
         # Get back button from icon manager
