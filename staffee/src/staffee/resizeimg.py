@@ -5,7 +5,7 @@ This program uses pillow to resize uploaded profile pictures.
 from PIL import Image
 import os 
 
-def resize_profile_pictures(folder_path, pfp_size=(120,120)): 
+def resize_profile_pictures(folder_path, pfp_size=(100,100)): 
     # pfp (width, height)
 
     for filename in os.listdir(folder_path):

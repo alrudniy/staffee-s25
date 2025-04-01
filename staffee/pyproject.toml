@@ -24,7 +24,7 @@ test_sources = [
 requires = [
     "pillow>=9.0.0",
     "mysql-connector>=1.5.0",
-    "passlib>=1.7.4"  
+    "passlib>=1.7.4"
 ]
 
 test_requires = [
@@ -168,7 +168,7 @@ requires = [
 [tool.briefcase.app.staffee.android]
 requires = [
     "toga-android~=0.4.7",
-    "passlib>=1.7.4"  # Add passlib specifically for Android
+    "passlib>=1.7.4", # Add passlib specifically for Android
 ]
 
 
@@ -186,6 +186,7 @@ build_gradle_dependencies = [
 [tool.briefcase.app.staffee.web]
 requires = [
     "toga-web~=0.4.7",
+    "passlib>=1.7.4"
 ]
 style_framework = "Shoelace v2.3"
 
