@@ -4,6 +4,10 @@ from toga.style import Pack
 from toga.constants import *
 
 class NotificationSettings:
+    def __init__(self, app):
+        # Store the app instance
+        self.app = app
+    
     def create_notif_settings_view(self, widget):
         # Get the current directory and set up image path
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -22,7 +26,7 @@ class NotificationSettings:
         # Back arrow button 
         back_button = toga.Button(
             icon=back_icon,
-            on_press=self.create_settings_view,
+            on_press=self.placeholder_action,
             style=Pack(padding=(20, 5), width=30, height=30, flex=1)
         )
 
@@ -101,7 +105,7 @@ class NotificationSettings:
             children=[header_box, scroll_box],
             style=Pack(direction=COLUMN))
             
-        self.main_window.content = main_box
+        return main_box
         
     def placeholder_action(self, widget):  # Placeholder for action of the add job
         pass

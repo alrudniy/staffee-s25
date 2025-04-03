@@ -2,7 +2,7 @@ import os
 import toga 
 from toga.style import Pack
 from toga.constants import *
-from staffee.notif_settings import NotificationSettings
+from notif_settings import NotificationSettings
 
 '''1. In order to create a window that would be standalone, I had to create a temp application with it's
 own main window in order to properly demonstrate the window I am working on. 
@@ -11,11 +11,12 @@ own main window in order to properly demonstrate the window I am working on.
 class SettingsView(toga.App):
     def startup(self):
         self.main_window = toga.MainWindow(title=self.formal_name)
-        self.create_settings_view()
-        self.main_window.show()
 
         # Initialize view modules
         self.notif_view = NotificationSettings(self)
+
+        self.create_settings_view()
+        self.main_window.show()
 
 
     def create_settings_view(self):
@@ -119,7 +120,7 @@ class SettingsView(toga.App):
         """
         Open the Notification Settings view in the same window.
         """
-        notif_content = self.notif_view.create_notif_settings_view()
+        notif_content = self.notif_view.create_notif_settings_view(widget)
         self.main_window.content = notif_content
 
 
