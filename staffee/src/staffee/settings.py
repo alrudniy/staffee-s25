@@ -4,21 +4,12 @@ from toga.style import Pack
 from toga.constants import *
 from notif_settings import NotificationSettings
 
-'''1. In order to create a window that would be standalone, I had to create a temp application with it's
-own main window in order to properly demonstrate the window I am working on. 
-'''
-
 class SettingsView(toga.App):
-    def startup(self):
-        self.main_window = toga.MainWindow(title=self.formal_name)
+    def __init__(self, app):
+        # Store the app instance
+        self.app = app
 
-        # Initialize view modules
-        self.notif_view = NotificationSettings(self)
-
-        self.create_settings_view()
-        self.main_window.show()
-
-
+    # Create view
     def create_settings_view(self):
         # Get the current directory and set up image path
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -111,7 +102,7 @@ class SettingsView(toga.App):
             style=Pack(direction=COLUMN, alignment="center", padding=10, background_color="#ffffff")
         )
 
-        self.main_window.content = main_box
+        return main_box
     
     def placeholder_action(self, widget):  # Placeholder for action of the add job
         pass
@@ -120,13 +111,6 @@ class SettingsView(toga.App):
         """
         Open the Notification Settings view in the same window.
         """
-        notif_content = self.notif_view.create_notif_settings_view(widget)
-        self.main_window.content = notif_content
-
-
-def main():
-    return SettingsView("SettingsView", "org.example.home")
-
-if __name__ == "__main__":
-    app = main()
-    app.main_loop()
+        notif_view = NotificationSettings(self.app)
+        notif_content = notif_view.create_notif_settings_view()
+        self.app.main_window.content = notif_content

@@ -8,7 +8,7 @@ class NotificationSettings:
         # Store the app instance
         self.app = app
     
-    def create_notif_settings_view(self, widget):
+    def create_notif_settings_view(self):
         # Get the current directory and set up image path
         current_dir = os.path.dirname(os.path.abspath(__file__))
         images_dir = os.path.join(current_dir, "images")
@@ -113,9 +113,8 @@ class NotificationSettings:
         
     def push_notification(self, widget):
         toggle_value = widget.value
-        print(widget.value)
 
-        switches_box = self.main_window.content.children[1].content.children[3]
+        switches_box = self.app.main_window.content.children[1].content.children[3]
         for child in switches_box.children:
             if child.id != "1":
                 child.value = toggle_value
