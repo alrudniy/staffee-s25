@@ -72,6 +72,7 @@ class IconManager:
             A string containing an emoji fallback
         """
         return self.fallback_icons.get(name, '•')
+    
 
     def create_action_box(self, on_press_handler):
         """
@@ -226,6 +227,7 @@ class IconManager:
             
         return calendar_button
 
+    
     def create_nav_bar(self, on_press_handler):
         """
         Create a navigation bar with Android-optimized button sizes.
@@ -237,10 +239,10 @@ class IconManager:
             A toga.Box containing the navigation bar
         """
         nav_items = [
-            ('Home', 'home-24'),
-            ('Chat', 'chat-24'),
-            ('Notifications', 'noti-24'),
-            ('Account', 'acc-24')
+            ('Home', 'home-24', self.home_action),
+            ('Chat', 'chat-24', self.chat_action),
+            ('Notifications', 'noti-24', self.noti_action),
+            ('Account', 'acc-24', self.acc_action)
         ]
         
         # Create main box with minimal styling
@@ -252,14 +254,14 @@ class IconManager:
             )
         )
         
-        for label, icon_name in nav_items:
+        for label, icon_name, button_action in nav_items:
             icon = self.get_icon(icon_name)
             
             # Use Android recommended touch target size (48dp)
             if icon:
                 nav_button = toga.Button(
                     icon=icon,
-                    on_press=on_press_handler,
+                    on_press=button_action,
                     style=toga.style.Pack(
                         width=70,
                         height=70,
@@ -270,7 +272,7 @@ class IconManager:
             else:
                 nav_button = toga.Button(
                     self.get_fallback(icon_name),
-                    on_press=on_press_handler,
+                    on_press=button_action,
                     style=toga.style.Pack(
                         width=70,
                         height=70,
@@ -302,3 +304,15 @@ class IconManager:
             nav_box.add(nav_item)
         
         return nav_box
+    
+    def home_action(self):
+        print("Go home")
+
+    def chat_action(self):
+        print("Go chat")
+
+    def noti_action(self):
+        print("Go notifications")
+
+    def acc_action(self):
+        print("Go account")
