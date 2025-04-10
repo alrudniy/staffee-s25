@@ -6,6 +6,7 @@ It ensures icons are only created once and can be reused across the application 
 import os
 import toga
 from toga.style.pack import ROW, COLUMN
+from staffee.user_account import UserAccount
 
 class IconManager:
     def __init__(self, app):
@@ -228,7 +229,7 @@ class IconManager:
         return calendar_button
 
     
-    def create_nav_bar(self, on_press_handler):
+    def create_nav_bar(self):
         """
         Create a navigation bar with Android-optimized button sizes.
         
@@ -314,5 +315,11 @@ class IconManager:
     def noti_action(self):
         print("Go notifications")
 
-    def acc_action(self):
-        print("Go account")
+    def acc_action(self, widget):
+        """
+        Open the Account view in the same window.
+        """
+        # Initialize view modules
+        acc_view = UserAccount(self.app)
+        acc_content = acc_view.create_content()
+        self.app.main_window.content = acc_content

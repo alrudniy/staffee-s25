@@ -2,22 +2,12 @@ import os
 import toga
 from toga.style import Pack
 from toga.constants import *
-from settings import SettingsView
+from staffee.settings import SettingsView
 
 class UserAccount(toga.App):
-    def startup(self):
-        self.main_window = toga.MainWindow(title=self.formal_name)
-
-        # Initialize view modules
-        self.settings_view = SettingsView(self)
-
-        self.create_content()
-        self.main_window.show()
-    
-    '''
     def _init__(self, app):
         self.app = app
-    '''
+        self.create_content()
     
     
     def create_content(self):
@@ -73,7 +63,7 @@ class UserAccount(toga.App):
             style=Pack(direction=COLUMN, alignment="center", padding=10, background_color="#ffffff")
         )
 
-        self.main_window.content = main_box
+        return main_box
     
     def placeholder_action(self, widget):  # Placeholder for action of the add job
         pass
@@ -82,12 +72,8 @@ class UserAccount(toga.App):
         """
         Open the Settings view in the same window.
         """
-        settings_content = self.settings_view.create_settings_view()
-        self.main_window.content = settings_content
+        settings_view = SettingsView(self)
+        settings_content = settings_view.create_settings_view()
+        self.app.main_window.content = settings_content
 
-def main():
-    return UserAccount("UserAccount", "org.example.home")
-
-if __name__ == "__main__":
-    app = main()
-    app.main_loop()
+    

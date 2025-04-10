@@ -303,7 +303,7 @@ class MainApp(toga.App):
         )
 
         # Navigation bar - use the icon manager to create it
-        nav_box = self.icon_manager.create_nav_bar(self.placeholder_action)
+        nav_box = self.icon_manager.create_nav_bar()
         
         # Main content layout
         main_content = toga.Box(
