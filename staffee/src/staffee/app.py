@@ -1,5 +1,6 @@
 import toga
 import mysql.connector
+import re
 from toga.style import Pack
 from toga.constants import COLUMN, ROW
 from staffee.owner_view_staff import OwnerViewStaff
@@ -39,21 +40,7 @@ class MainApp(toga.App):
         # Track navigation
         self.navigation_history = []
         self.current_view = "login"
-        
-    
-    def validate_email(self,email):
-        """
-        simple email validation for mobile/constrained environments, cannot tell if fake or real.
 
-        Args:
-            email (str): Email address to validate
-    
-        Returns:
-            bool: True if email format looks valid, False otherwise 
-        """
-        # Basic checks: contains @, has something before and after @
-        return isinstance(email, str) and '@' in email and '.' in email.split('@')[1]
-        
     def show_login_screen(self):
         """Display the login screen."""
         title = toga.Label("Sign In", style=Pack(padding=(40, 0, 30, 0), text_align="center", font_weight="bold", font_size=30, background_color="white"))
@@ -138,15 +125,41 @@ class MainApp(toga.App):
             self.message_label.text = "All fields are required."
             return
 
-        if self.validate_email(email) == False:
-            self.message_label.text = "Enter a valid email address"
-            return
-
         # Check if passwords match
         if password != confirm_password:
             self.message_label.text = "Passwords do not match."
             return
-            
+        
+        def is_valid_email(address):
+            pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+            return re.match(pattern, address) is not None
+
+        if is_valid_email(email) == False:
+            self.message_label.text = "Email is invalid."
+            return
+        
+        try:
+            conn = mysql.connector.connect(**DB_CONFIG)
+            cursor = conn.cursor()
+
+            # Query to check if the email exists
+            cursor.execute("SELECT COUNT(*) FROM Users WHERE email = %s", (email,))
+            (count,) = cursor.fetchone()
+
+            if count > 0:
+                self.message_label.text = "Email is already in use."
+                cursor.close()
+                conn.close()
+                return
+
+            cursor.close()
+            conn.close()
+
+        except mysql.connector.Error as err:
+            self.message_label.text = f"Database error: {err}"
+            return
+        
+
         # Hash the password
         hashed_password = self.hash_password(password)
 
