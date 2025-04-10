@@ -6,6 +6,8 @@ It works with the main application window, similar to the OwnerViewStaff class.
 import toga
 from toga.style import Pack
 from toga.constants import *
+from datetime import datetime
+import os
 
 __all__ = ['ProfileView']
 
@@ -13,7 +15,7 @@ class ProfileView:
     def __init__(self, app):
         # Initialize the ProfileView.
         self.app = app
-        
+        self.resource_path = os.path.join(os.path.dirname(__file__), 'resources')
     def create_content(self, staff_data, profile_pic=None, job_key=None):
         """
         Create the content for the profile view.
@@ -75,32 +77,41 @@ class ProfileView:
             )
         )
         
-        # Title with staff name
+       # Title with staff name
         title_label = toga.Label(
             f"Profile: {staff_data.get('name', 'Staff Member')}",
             style=Pack(font_size=18, font_weight='bold', padding=(20, 20, 10, 20))
         )
-        
+    
         # Header with back button and title
         header_box = toga.Box(
             children=[back_button, title_label],
             style=Pack(direction=ROW, alignment='center', padding=(0, 10))
         )
         
-        # Create profile picture container
         profile_container = toga.Box(
             style=Pack(direction=COLUMN, alignment='center', padding=10)
-        )
+            )
         
-        if profile_pic:
-            profile_container.add(profile_pic)
-        
+        image_path = os.path.join(self.resource_path, 'profile_pics', profile_pic)
+
+        try:
+                image = toga.Image(image_path)
+                profile_image = toga.ImageView(image=image)
+                profile_container.add(profile_image)
+
+        except Exception as e:
+            # Something went wrong with the entire profile container
+            print(f"Error creating profile container: {e}")
+            profile_label = toga.Label("Profile", style=Pack(padding=10))
+            profile_container.add(profile_label)
+    
         # Create text display with staff details
         details_text = self.format_staff_details(staff_data)
         details_display = toga.MultilineTextInput(
             readonly=True,
             value=details_text,
-            style=Pack(padding=10, flex=1, height=200)
+            style=Pack(padding=10, flex=1, height=300)
         )
         
         # Create 'fulfill' and 'cancel' buttons 
@@ -141,24 +152,33 @@ class ProfileView:
         """Format staff data into a readable text format"""
         details = []
         
-        # Add name and ID
-        details.append(f"Name: {staff_data.get('name', 'Unknown')}")
         details.append(f"ID: {staff_data.get('ID', 'Unknown')}")
         
         # Add hourly rate if available
-        if 'hourly rate' in staff_data:
-            details.append(f"Rate: {staff_data['hourly rate']}")
+        if 'hourly_rate' in staff_data:
+            details.append(f"Rate: ${staff_data['hourly_rate']}")
             
         # Add recommendations if available
-        if 'recommended' in staff_data:
-            details.append(f"Recommendations: {staff_data['recommended']}")
+        if 'recommendations' in staff_data:
+            details.append(f"Recommendations: {staff_data['recommendations']}")
             
         # Add date and time info if available
-        if staff_data.get('date'):
-            details.append(f"Date: {staff_data['date']}")
+        if staff_data.get('start_date') and staff_data.get('end_date'):
+            details.append(f"Contract duration: {staff_data['start_date']} - {staff_data['end_date']}")
+          
             
-        if staff_data.get('start time') and staff_data.get('end time'):
-            details.append(f"Hours: {staff_data['start time']} - {staff_data['end time']}")
+        if staff_data.get('start_time') and staff_data.get('end_time'):
+            start_time = str(staff_data['start_time'])
+            end_time = str(staff_data['end_time'])
+
+            # Parse the 24-hour time string into a datetime object
+            start_time_obj = datetime.strptime(start_time, "%H:%M:%S")
+            end_time_obj = datetime.strptime(end_time, "%H:%M:%S")
+            # Format the datetime object into a 12-hour time string
+            start_time_12hr = start_time_obj.strftime("%I:%M:%S %p")
+            end_time_12hr = end_time_obj.strftime("%I:%M:%S %p")
+
+            details.append(f"Time: {start_time_12hr} - {end_time_12hr}")
             
         
         # Join all details with newlines
