@@ -170,7 +170,7 @@ class OwnerViewStaff:
         )
 
         # Use the icon manager to create the navigation bar
-        nav_box = self.app.icon_manager.create_nav_bar(self.placeholder_action)
+        nav_box = self.app.icon_manager.create_nav_bar()
 
         # Create a container for dynamic content
         self.dynamic_content = toga.Box(

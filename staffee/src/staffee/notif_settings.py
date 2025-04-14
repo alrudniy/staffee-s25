@@ -97,7 +97,7 @@ class NotificationSettings:
                             sub5, callSwitch,
                             sub6, par6, distanceInput,
                             sub7],
-                style=Pack(direction=COLUMN, padding=10)
+                style=Pack(direction=COLUMN, padding=10, window_height=500, window_width=300)
             )
         )
 

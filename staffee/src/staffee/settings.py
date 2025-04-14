@@ -4,7 +4,7 @@ from toga.style import Pack
 from toga.constants import *
 from staffee.notif_settings import NotificationSettings
 
-class SettingsView(toga.App):
+class SettingsView:
     def __init__(self, app):
         # Store the app instance
         self.app = app

@@ -306,20 +306,27 @@ class IconManager:
         
         return nav_box
     
-    def home_action(self):
+    def home_action(self, widget):
         print("Go home")
 
-    def chat_action(self):
+    def chat_action(self, widget):
         print("Go chat")
 
-    def noti_action(self):
+    def noti_action(self, widget):
         print("Go notifications")
 
     def acc_action(self, widget):
         """
         Open the Account view in the same window.
         """
-        # Initialize view modules
-        acc_view = UserAccount(self.app)
-        acc_content = acc_view.create_content()
-        self.app.main_window.content = acc_content
+
+        try:
+            self.current_view = "account_view"
+
+            self.account_view = UserAccount(self.app)
+
+            account_content = self.account_view.create_content()
+            self.app.main_window.title = "Account View"
+            self.app.main_window.content = account_content
+        except Exception as e:
+            print(f"Error in acc_action: {e}")

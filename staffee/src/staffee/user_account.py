@@ -4,8 +4,8 @@ from toga.style import Pack
 from toga.constants import *
 from staffee.settings import SettingsView
 
-class UserAccount(toga.App):
-    def _init__(self, app):
+class UserAccount:
+    def __init__(self, app):
         self.app = app
         self.create_content()
     
@@ -72,8 +72,15 @@ class UserAccount(toga.App):
         """
         Open the Settings view in the same window.
         """
-        settings_view = SettingsView(self)
-        settings_content = settings_view.create_settings_view()
-        self.app.main_window.content = settings_content
 
+        try:
+            self.current_view = "settings_view"
+
+            self.settings_view = SettingsView(self.app)
+
+            settings_content = self.settings_view.create_settings_view()
+            self.app.main_window.title = "Settings View"
+            self.app.main_window.content = settings_content
+        except Exception as e:
+            print(f"Error in open_settings_view: {e}")
     
