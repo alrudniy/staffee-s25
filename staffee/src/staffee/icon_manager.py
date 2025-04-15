@@ -319,12 +319,10 @@ class IconManager:
         """
         Open the Account view in the same window.
         """
-
-        print(f"acc_action triggered. Type of widget: {type(widget)} | Value: {widget}")
         try:
             self.app.navigation_history.append(self.app.current_view)
             self.app.current_view = "account_view"
-            self.app.main_window.title = "Account"
+            self.app.main_window.title = "Account View"
 
             account_view = UserAccount(self.app)
             account_content = account_view.create_content()

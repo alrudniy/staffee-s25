@@ -60,10 +60,13 @@ class UserAccount:
         
         buttons_box = toga.Box(style=Pack(direction=COLUMN, padding=(20, 20, 10, 20), alignment=LEFT), children=[
             history_button, invite_friends, settings_button, contact_us, logout_button])
+        
+        # Use the icon manager to create the navigation bar
+        nav_box = self.app.icon_manager.create_nav_bar()
 
         # Main Box
         main_box = toga.Box(
-            children=[header_box, profile_box, toga.Divider(), buttons_box],
+            children=[header_box, profile_box, toga.Divider(), buttons_box, nav_box],
             style=Pack(direction=COLUMN, alignment="center", padding=10, background_color="#ffffff")
         )
 
