@@ -110,12 +110,15 @@ class OwnerViewStaff:
                 u.UID,
                 u.first_name,
                 u.last_name,
+                jl.JID,
                 jl.job_position,
                 jl.start_date,
                 jl.end_date,
                 jl.start_time,
                 jl.end_time,
                 jl.settled_hr_rate,
+                jl.BUSID,
+                b.bus_name,
                 COALESCE(ai.Recommended, 0) as recommendations
             FROM 
                 Users u
@@ -127,7 +130,7 @@ class OwnerViewStaff:
                 applicant_info ai ON u.UID = ai.UID
             WHERE 
                 b.UID = %s
-                AND jl.is_active = TRUE
+                AND jl.is_active = 1
                 AND jl.UID IS NOT NULL
             ORDER BY 
                 jl.start_date, jl.start_time;
@@ -137,10 +140,10 @@ class OwnerViewStaff:
             staff_results = cursor.fetchall()
 
             for staff in staff_results:
-                job_key = f"{staff['first_name']} {staff['last_name']}"
+                job_key = f"{staff['JID']}"
                 
                 self.data[job_key] = {
-                    'name': job_key,
+                    'JID': job_key,
                     'ID': staff['UID'],
                     'first_name': staff['first_name'],
                     'last_name': staff['last_name'],
@@ -150,7 +153,9 @@ class OwnerViewStaff:
                     'end_time': staff['end_time'],
                     'start_date': staff['start_date'],
                     'end_date': staff['end_date'],
-                    'job_position': staff['job_position']
+                    'job_position': staff['job_position'],
+                    'BUSID': staff['BUSID'],
+                    'bus_name': staff['bus_name']
                 }
 
                 # Fetch and store profile image if available
@@ -287,7 +292,7 @@ class OwnerViewStaff:
         self.app.navigation_history.append(self.app.current_view)
         self.app.current_view = "profile_view"
     
-        self.app.main_window.title = f"Profile: {job_details['name']}"
+        self.app.main_window.title = f"Business: {job_details['bus_name']}"
     
         profile_view = ProfileView(self.app)
         profile_content = profile_view.create_content(job_details, profile_pic, job_key)

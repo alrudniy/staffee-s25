@@ -7,15 +7,28 @@ import toga
 from toga.style import Pack
 from toga.constants import *
 from datetime import datetime
+import mysql.connector
 import os
 
 __all__ = ['ProfileView']
+
+# Database connection details
+DB_CONFIG = {
+    "host": "34.125.69.91",
+    "user": "staffee_user",
+    "password": "SmoothS@iling",
+    "database": "staffee",
+    "charset": "utf8mb4",
+    "collation": "utf8mb4_general_ci"
+}
 
 class ProfileView:
     def __init__(self, app):
         # Initialize the ProfileView.
         self.app = app
         self.resource_path = os.path.join(os.path.dirname(__file__), 'resources')
+        connection = mysql.connector.connect(**DB_CONFIG)
+        self.db_conn = connection
     def create_content(self, staff_data, profile_pic=None, job_key=None):
         """
         Create the content for the profile view.
@@ -42,15 +55,20 @@ class ProfileView:
                 "Recommend staff",
                 "Do you recommend this applicant?",
                 ))
-            
+    
                 if recommend_question and hasattr(self.app, 'staff_view'):
                     # Update the recommendation count in the original data
                     staff_id = staff_data["ID"]
-                    if job_key in self.app.staff_view.data:
-                        self.app.staff_view.data[job_key]["recommended"] += 1
-            
-                # Remove the job from the original data
-                self.complete_job()
+                    cursor = self.db_conn.cursor()
+                    try:
+                        query = "UPDATE applicant_info SET Recommended = Recommended + 1 WHERE UID = %s"
+                        cursor.execute(query, (staff_id,)) 
+                        self.db_conn.commit()  # Add this to commit the changes
+                    finally:
+                        cursor.close()  # Always close cursor
+    
+            # Remove the job from the original data
+            self.complete_job(staff_data["ID"], staff_data["BUSID"])
 
         async def action_cancel_button(widget):
             """Handle termination confirmation and job removal."""
@@ -60,7 +78,7 @@ class ProfileView:
             ))
         
             if confirm_question:
-                self.complete_job()
+                self.complete_job(staff_data["ID"], staff_data["BUSID"])
 
 
         back_button = toga.Button(
@@ -79,7 +97,7 @@ class ProfileView:
         
        # Title with staff name
         title_label = toga.Label(
-            f"Profile: {staff_data.get('name', 'Staff Member')}",
+            f"Profile: {staff_data.get('first_name')} {staff_data.get('last_name')}",
             style=Pack(font_size=18, font_weight='bold', padding=(20, 20, 10, 20))
         )
     
@@ -200,14 +218,24 @@ class ProfileView:
                     if hasattr(self.app, 'staff_view'):
                         self.app.main_window.content = self.app.staff_view.create_content()
                         
-    def complete_job(self):
+    def complete_job(self, uid, BUSID):
         """Remove the job from staff_view data and navigate back"""
         # Remove the job from the original data source
         if hasattr(self.app, 'staff_view') and self.job_key in self.app.staff_view.data:
-            del self.app.staff_view.data[self.job_key]
+            cursor = self.db_conn.cursor()
+            try:
+                query = "DELETE FROM job_listings WHERE UID = %s AND JID = %s AND BUSID = %s"
+                cursor.execute(query, (uid, self.job_key, BUSID)) 
+                self.db_conn.commit()  # Add this to commit the changes
+            finally:
+                cursor.close()
         
+            # After successful database update, update the local data
+            del self.app.staff_view.data[self.job_key]
+    
         # Navigate back to the staff view
         self.navigate_back(None)  # No widget needed for programmatic navigation
+        
 
     def placeholder_action(self, widget):
         """Placeholder for button actions"""
