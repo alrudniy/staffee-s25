@@ -10,7 +10,7 @@ class SettingsView:
         self.app = app
 
     # Create view
-    def create_settings_view(self):
+    def create_content(self):
         # Back button
         back_button = self.app.icon_manager.create_back_button(self.navigate_back)
 
@@ -93,8 +93,11 @@ class SettingsView:
         """
         Open the Notification Settings view in the same window.
         """
+        self.app.navigation_history.append(self.app.current_view)
+        self.current_view = "notif_settings_view"
         notif_view = NotificationSettings(self.app)
-        notif_content = notif_view.create_notif_settings_view()
+        notif_content = notif_view.create_content()
+        self.app.main_window.title = "Notification Settings View"
         self.app.main_window.content = notif_content
 
     # Navigate back
@@ -107,5 +110,6 @@ class SettingsView:
                 
                 if previous_view == "account_view":
                     self.app.main_window.title = "Account View"
-                    if hasattr(self.app, 'account_view'):
-                        self.app.main_window.content = self.app.account_view.create_content() 
+                    if hasattr(self.app, 'user_account'):
+                        user_account = self.app.user_account
+                        self.app.main_window.content = user_account.create_content()

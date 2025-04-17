@@ -81,11 +81,12 @@ class UserAccount:
         """
 
         try:
+            self.app.navigation_history.append(self.app.current_view)
             self.current_view = "settings_view"
 
-            self.settings_view = SettingsView(self.app)
+            settings_view = SettingsView(self.app)
 
-            settings_content = self.settings_view.create_settings_view()
+            settings_content = settings_view.create_content()
             self.app.main_window.title = "Settings View"
             self.app.main_window.content = settings_content
         except Exception as e:

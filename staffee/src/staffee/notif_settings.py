@@ -8,27 +8,9 @@ class NotificationSettings:
         # Store the app instance
         self.app = app
     
-    def create_notif_settings_view(self):
-        # Get the current directory and set up image path
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        images_dir = os.path.join(current_dir, "images")
-        os.makedirs(images_dir, exist_ok=True)
-
-        # Create paths for icons with error handling
-        try:
-            back_icon_path = os.path.join(images_dir, "back_arrow.png")
-
-            back_icon = toga.Icon(back_icon_path)
-        except Exception as e:
-            print(f"Error loading icons: {e}")
-            back_icon = None
-
-        # Back arrow button 
-        back_button = toga.Button(
-            icon=back_icon,
-            on_press=self.placeholder_action,
-            style=Pack(padding=(20, 5), width=30, height=30, flex=1)
-        )
+    def create_content(self):
+        # Back button
+        back_button = self.app.icon_manager.create_back_button(self.navigate_back)
 
         # Chat label
         title_label = toga.Label(
@@ -119,3 +101,18 @@ class NotificationSettings:
             if child.id != "1":
                 child.value = toggle_value
                 child.enabled = not toggle_value
+
+    # Navigate back
+    def navigate_back(self, widget):
+        # Access the main app to switch back to the main view
+        if hasattr(self.app, 'navigation_history') and hasattr(self.app, 'current_view'):
+            if self.app.navigation_history:
+                previous_view = self.app.navigation_history.pop()
+                self.app.current_view = previous_view
+                
+                if previous_view == "settings_view":
+                    self.app.main_window.title = "Settings View"
+                    if hasattr(self.app, 'settings'):
+                        # Recreate the settings content
+                        self.app.settings = self.app.settings_view
+                        self.app.main_window.content = self.app.settings.create_content()
