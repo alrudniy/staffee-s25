@@ -8,6 +8,7 @@ class SettingsView:
     def __init__(self, app):
         # Store the app instance
         self.app = app
+        self.notif_view = NotificationSettings(self.app)
 
     # Create view
     def create_content(self):
@@ -94,9 +95,8 @@ class SettingsView:
         Open the Notification Settings view in the same window.
         """
         self.app.navigation_history.append(self.app.current_view)
-        self.current_view = "notif_settings_view"
-        notif_view = NotificationSettings(self.app)
-        notif_content = notif_view.create_content()
+        self.app.current_view = "notif_settings_view"
+        notif_content = self.notif_view.create_content()
         self.app.main_window.title = "Notification Settings View"
         self.app.main_window.content = notif_content
 

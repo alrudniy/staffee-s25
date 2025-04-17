@@ -7,6 +7,7 @@ from staffee.settings import SettingsView
 class UserAccount:
     def __init__(self, app):
         self.app = app
+        self.settings_view = SettingsView(self.app)
     
     
     def create_content(self):
@@ -82,11 +83,9 @@ class UserAccount:
 
         try:
             self.app.navigation_history.append(self.app.current_view)
-            self.current_view = "settings_view"
+            self.app.current_view = "settings_view"
 
-            settings_view = SettingsView(self.app)
-
-            settings_content = settings_view.create_content()
+            settings_content = self.settings_view.create_content()
             self.app.main_window.title = "Settings View"
             self.app.main_window.content = settings_content
         except Exception as e:
@@ -105,7 +104,7 @@ class UserAccount:
                     self.app.main_window.content = self.app.main_content
                 elif previous_view == "staff_view":
                     self.app.main_window.title = "Staff View"
-                    if hasattr(self.app, 'staff_view'):
+                    if hasattr(self.app, "staff_view"):
                         self.app.main_window.content = self.app.staff_view.create_content() 
 
     

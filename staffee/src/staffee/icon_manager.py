@@ -17,6 +17,8 @@ class IconManager:
             app: The main application instance
         """
         self.app = app
+        self.account_view = UserAccount(app)
+
         self.icons = {}
         self.fallback_icons = {
             'cal-24': '📅',
@@ -324,8 +326,7 @@ class IconManager:
             self.app.current_view = "account_view"
             self.app.main_window.title = "Account View"
 
-            account_view = UserAccount(self.app)
-            account_content = account_view.create_content()
+            account_content = self.account_view.create_content()
             self.app.main_window.content = account_content
         except Exception as e:
             print(f"Error in acc_action: {e}")

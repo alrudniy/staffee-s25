@@ -79,7 +79,7 @@ class NotificationSettings:
                             sub5, callSwitch,
                             sub6, par6, distanceInput,
                             sub7],
-                style=Pack(direction=COLUMN, padding=10, height=500, width=300)
+                style=Pack(direction=COLUMN, padding=10, flex=1, background_color="#ffffff")
             )
         )
 
@@ -112,7 +112,7 @@ class NotificationSettings:
                 
                 if previous_view == "settings_view":
                     self.app.main_window.title = "Settings View"
-                    if hasattr(self.app, 'settings'):
+                    if hasattr(self.app, "settings_view"):
                         # Recreate the settings content
-                        self.app.settings = self.app.settings_view
-                        self.app.main_window.content = self.app.settings.create_content()
+                        settings = self.app.settings_view
+                        self.app.main_window.content = settings.create_content()
