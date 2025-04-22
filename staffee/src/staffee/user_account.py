@@ -2,29 +2,24 @@ import os
 import toga
 from toga.style import Pack
 from toga.constants import *
-from settings import SettingsView
+from staffee.settings import SettingsView
 
-class UserAccount(toga.App):
-    def startup(self):
-        self.main_window = toga.MainWindow(title=self.formal_name)
-
-        # Initialize view modules
-        self.settings_view = SettingsView(self)
-
-        self.create_content()
-        self.main_window.show()
-    
-    '''
-    def _init__(self, app):
+class UserAccount:
+    def __init__(self, app):
         self.app = app
-    '''
+        self.settings_view = SettingsView(self.app)
     
     
     def create_content(self):
         # Header
         title_label = toga.Label('Account', style=Pack(font_size=20, font_weight='bold', padding=(20, 20, 10, 20),
                                                        background_color="#ffffff"))
+        
+        back_button = self.app.icon_manager.create_back_button(self.navigate_back)
 
+        header_box = toga.Box(style=Pack(direction=ROW, alignment=CENTER, padding=(0, 10), background_color="#ffffff"),
+            children=[back_button, title_label])
+        
         # Code for profile picture
 
         # Profile name and edit button
@@ -66,14 +61,17 @@ class UserAccount(toga.App):
         
         buttons_box = toga.Box(style=Pack(direction=COLUMN, padding=(20, 20, 10, 20), alignment=LEFT), children=[
             history_button, invite_friends, settings_button, contact_us, logout_button])
+        
+        # Use the icon manager to create the navigation bar
+        nav_box = self.app.icon_manager.create_nav_bar()
 
         # Main Box
         main_box = toga.Box(
-            children=[title_label, profile_box, toga.Divider(), buttons_box],
+            children=[header_box, profile_box, toga.Divider(), buttons_box, nav_box],
             style=Pack(direction=COLUMN, alignment="center", padding=10, background_color="#ffffff")
         )
 
-        self.main_window.content = main_box
+        return main_box
     
     def placeholder_action(self, widget):  # Placeholder for action of the add job
         pass
@@ -82,12 +80,31 @@ class UserAccount(toga.App):
         """
         Open the Settings view in the same window.
         """
-        settings_content = self.settings_view.create_settings_view()
-        self.main_window.content = settings_content
 
-def main():
-    return UserAccount("UserAccount", "org.example.home")
+        try:
+            self.app.navigation_history.append(self.app.current_view)
+            self.app.current_view = "settings_view"
 
-if __name__ == "__main__":
-    app = main()
-    app.main_loop()
+            settings_content = self.settings_view.create_content()
+            self.app.main_window.title = "Settings View"
+            self.app.main_window.content = settings_content
+        except Exception as e:
+            print(f"Error in open_settings_view: {e}")
+        
+    # Navigate back
+    def navigate_back(self, widget):
+        # Access the main app to switch back to the main view
+        if hasattr(self.app, 'navigation_history') and hasattr(self.app, 'current_view'):
+            if self.app.navigation_history:
+                previous_view = self.app.navigation_history.pop()
+                self.app.current_view = previous_view
+                
+                if previous_view == "main":
+                    self.app.main_window.title = self.app.formal_name
+                    self.app.main_window.content = self.app.main_content
+                elif previous_view == "staff_view":
+                    self.app.main_window.title = "Staff View"
+                    if hasattr(self.app, "staff_view"):
+                        self.app.main_window.content = self.app.staff_view.create_content() 
+
+    

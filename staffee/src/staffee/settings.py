@@ -2,35 +2,18 @@ import os
 import toga 
 from toga.style import Pack
 from toga.constants import *
-from notif_settings import NotificationSettings
+from staffee.notif_settings import NotificationSettings
 
-class SettingsView(toga.App):
+class SettingsView:
     def __init__(self, app):
         # Store the app instance
         self.app = app
+        self.notif_view = NotificationSettings(self.app)
 
     # Create view
-    def create_settings_view(self):
-        # Get the current directory and set up image path
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        images_dir = os.path.join(current_dir, "images")
-        os.makedirs(images_dir, exist_ok=True)
-
-        # Create paths for icons with error handling
-        try:
-            back_icon_path = os.path.join(images_dir, "back_arrow.png")
-
-            back_icon = toga.Icon(back_icon_path)
-        except Exception as e:
-            print(f"Error loading icons: {e}")
-            back_icon = None
-
-        # Back arrow button 
-        back_button = toga.Button(
-            icon=back_icon,
-            on_press=self.placeholder_action,
-            style=Pack(padding=5, width=30, height=30, flex=2)
-        )
+    def create_content(self):
+        # Back button
+        back_button = self.app.icon_manager.create_back_button(self.navigate_back)
 
         # Chat label
         title_label = toga.Label(
@@ -111,6 +94,22 @@ class SettingsView(toga.App):
         """
         Open the Notification Settings view in the same window.
         """
-        notif_view = NotificationSettings(self.app)
-        notif_content = notif_view.create_notif_settings_view()
+        self.app.navigation_history.append(self.app.current_view)
+        self.app.current_view = "notif_settings_view"
+        notif_content = self.notif_view.create_content()
+        self.app.main_window.title = "Notification Settings View"
         self.app.main_window.content = notif_content
+
+    # Navigate back
+    def navigate_back(self, widget):
+        # Access the main app to switch back to the main view
+        if hasattr(self.app, 'navigation_history') and hasattr(self.app, 'current_view'):
+            if self.app.navigation_history:
+                previous_view = self.app.navigation_history.pop()
+                self.app.current_view = previous_view
+                
+                if previous_view == "account_view":
+                    self.app.main_window.title = "Account View"
+                    if hasattr(self.app, 'user_account'):
+                        user_account = self.app.user_account
+                        self.app.main_window.content = user_account.create_content()

@@ -6,6 +6,7 @@ It ensures icons are only created once and can be reused across the application 
 import os
 import toga
 from toga.style.pack import ROW, COLUMN
+from staffee.user_account import UserAccount
 
 class IconManager:
     def __init__(self, app):
@@ -16,6 +17,8 @@ class IconManager:
             app: The main application instance
         """
         self.app = app
+        self.account_view = UserAccount(app)
+
         self.icons = {}
         self.fallback_icons = {
             'cal-24': '📅',
@@ -72,6 +75,7 @@ class IconManager:
             A string containing an emoji fallback
         """
         return self.fallback_icons.get(name, '•')
+    
 
     def create_action_box(self, on_press_handler):
         """
@@ -226,7 +230,8 @@ class IconManager:
             
         return calendar_button
 
-    def create_nav_bar(self, on_press_handler):
+    
+    def create_nav_bar(self):
         """
         Create a navigation bar with Android-optimized button sizes.
         
@@ -237,10 +242,10 @@ class IconManager:
             A toga.Box containing the navigation bar
         """
         nav_items = [
-            ('Home', 'home-24'),
-            ('Chat', 'chat-24'),
-            ('Notifications', 'noti-24'),
-            ('Account', 'acc-24')
+            ('Home', 'home-24', self.home_action),
+            ('Chat', 'chat-24', self.chat_action),
+            ('Notifications', 'noti-24', self.noti_action),
+            ('Account', 'acc-24', self.acc_action)
         ]
         
         # Create main box with minimal styling
@@ -252,14 +257,14 @@ class IconManager:
             )
         )
         
-        for label, icon_name in nav_items:
+        for label, icon_name, button_action in nav_items:
             icon = self.get_icon(icon_name)
             
             # Use Android recommended touch target size (48dp)
             if icon:
                 nav_button = toga.Button(
                     icon=icon,
-                    on_press=on_press_handler,
+                    on_press=button_action,
                     style=toga.style.Pack(
                         width=70,
                         height=70,
@@ -270,7 +275,7 @@ class IconManager:
             else:
                 nav_button = toga.Button(
                     self.get_fallback(icon_name),
-                    on_press=on_press_handler,
+                    on_press=button_action,
                     style=toga.style.Pack(
                         width=70,
                         height=70,
@@ -302,3 +307,26 @@ class IconManager:
             nav_box.add(nav_item)
         
         return nav_box
+    
+    def home_action(self, widget):
+        print("Go home")
+
+    def chat_action(self, widget):
+        print("Go chat")
+
+    def noti_action(self, widget):
+        print("Go notifications")
+
+    def acc_action(self, widget=None):
+        """
+        Open the Account view in the same window.
+        """
+        try:
+            self.app.navigation_history.append(self.app.current_view)
+            self.app.current_view = "account_view"
+            self.app.main_window.title = "Account View"
+
+            account_content = self.account_view.create_content()
+            self.app.main_window.content = account_content
+        except Exception as e:
+            print(f"Error in acc_action: {e}")
