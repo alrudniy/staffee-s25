@@ -7,6 +7,7 @@ from staffee.settings import SettingsView
 class UserAccount:
     def __init__(self, app):
         self.app = app
+        self.resource_path = os.path.join(os.path.dirname(__file__), 'resources')
         self.settings_view = SettingsView(self.app)
     
     
@@ -21,15 +22,31 @@ class UserAccount:
             children=[back_button, title_label])
         
         # Code for profile picture
+        # Profile Box
+        profile_box = toga.Box(style=Pack(direction=ROW, padding=(20, 20, 10, 20), alignment=LEFT))
+        
+        # Path
+        image_path = os.path.join(self.resource_path, 'profile_pics', 'defaultpfp.png')
+
+        try:
+            image = toga.Image(image_path)
+            profile_image = toga.ImageView(image=image)
+            profile_box.add(profile_image)
+
+        except Exception as e:
+            # Something went wrong with the entire profile container
+            print(f"Error creating profile container: {e}")
+            profile_label = toga.Label("Profile", style=Pack(padding=10))
+            profile_box.add(profile_label)
 
         # Profile name and edit button
         profile_name = toga.Box(style=Pack(direction = COLUMN, padding=(5, 5, 5, 5), text_align="left",
                                            background_color="#ffffff", alignment=LEFT))
         profile_name.add(toga.Label('Profile Name', style=Pack(font_size=15, padding=(5, 5, 5, 5))))
         profile_name.add(toga.Label('Edit Staff Profile', style=Pack(font_size=12, padding=(5, 5, 5, 5), color=GREEN)))
+        profile_box.add(profile_name)
         
-        # Profile Box
-        profile_box = toga.Box(style=Pack(direction=ROW, padding=(20, 20, 10, 20), alignment=LEFT), children=[profile_name])
+        
 
         # Button select
         history_button = toga.Button("History", 
