@@ -9,6 +9,7 @@ from staffee.icon_manager import IconManager
 from staffee.user_account import UserAccount
 from staffee.settings import SettingsView
 from passlib.hash import pbkdf2_sha256  # Use passlib's pbkdf2_sha256 hasher (pure Python)
+import os
 
 # Database connection details
 DB_CONFIG = {
@@ -29,7 +30,6 @@ class MainApp(toga.App):
         self.icon_manager = IconManager(self)
         
         # Initialize view modules
-        self.staff_view = OwnerViewStaff(self, DB_CONFIG)
         self.profile_view = ProfileView(self)
         self.user_account = UserAccount(self)
         self.settings_view = SettingsView(self)
@@ -123,8 +123,7 @@ class MainApp(toga.App):
         usertype = self.user_type_selection.value
 
         # Default profile picture path
-        default_pfp_path = "src/staffee/resources/profile_pics/defaultpfp.png"
-
+        default_img = "defaultpfp.png"
         # Validate all fields are filled
         if not first_name or not last_name or not email or not password or not confirm_password:
             self.message_label.text = "All fields are required."
@@ -169,7 +168,7 @@ class MainApp(toga.App):
         hashed_password = self.hash_password(password)
 
         # Attempt to insert user with default profile picture path
-        if self.insert_user(email, hashed_password, usertype, first_name, last_name, default_pfp_path):
+        if self.insert_user(email, hashed_password, usertype, first_name, last_name, default_img):
             self.message_label.text = "Account created successfully!"
             self.show_login_screen()
         else:
@@ -190,13 +189,13 @@ class MainApp(toga.App):
         # Use passlib's pbkdf2_sha256 hasher (pure Python implementation)
         return pbkdf2_sha256.hash(plain_text_password)
 
-    def insert_user(self, email, hashed_password, usertype, first_name, last_name, pfp_path):
+    def insert_user(self, email, hashed_password, usertype, first_name, last_name, pfp_img):
         """Insert a new user into the database."""
         try:
             conn = mysql.connector.connect(**DB_CONFIG)
             cursor = conn.cursor()
             query = "INSERT INTO Users (email, password, type, first_name, last_name, pfp_path) VALUES (%s, %s, %s, %s, %s, %s)"
-            cursor.execute(query, (email, hashed_password, usertype, first_name, last_name, pfp_path))
+            cursor.execute(query, (email, hashed_password, usertype, first_name, last_name, pfp_img))
             conn.commit()
             cursor.close()
             conn.close()
@@ -215,7 +214,19 @@ class MainApp(toga.App):
         
         if usertype:
             if usertype == "Business Owner":
-                self.open_owner_view_staff(widget, DB_CONFIG)
+                connector = mysql.connector.connect(**DB_CONFIG)
+                UID_cursor = connector.cursor(dictionary=True)
+
+                # Query to fetch the UID of Owner - Fixed with proper tuple syntax
+                query = "SELECT UID FROM Users WHERE email = %s"
+                UID_cursor.execute(query, (username,))  # Note the comma to make it a tuple
+                business_owner_uid = UID_cursor.fetchone()
+            
+                # Close cursor and connection to prevent resource leaks
+                UID_cursor.close()
+                connector.close()
+                
+                self.open_owner_view_staff(widget, business_owner_uid['UID'])
             else:
                 self.show_main_content()
         else:
@@ -317,7 +328,7 @@ class MainApp(toga.App):
 
         return main_content
 
-    def open_owner_view_staff(self, widget, db_details = DB_CONFIG):
+    def open_owner_view_staff(self, widget,business_owner_uid = None, db_details = DB_CONFIG):
         """
         Navigate to the Owner View Staff screen.
         Adds current view to navigation history for back navigation.
@@ -326,7 +337,7 @@ class MainApp(toga.App):
             self.navigation_history.append(self.current_view)
             self.current_view = "staff_view"
 
-            self.staff_view = OwnerViewStaff(self, db_details)
+            self.staff_view = OwnerViewStaff(self, widget, business_owner_uid)
 
             staff_content = self.staff_view.create_content()
             self.main_window.title = "Staff View"
