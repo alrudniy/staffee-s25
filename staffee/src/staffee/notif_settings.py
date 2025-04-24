@@ -25,7 +25,7 @@ class NotificationSettings:
             
         # Description paragraphs
         par1 = toga.Label("Choose what notifications you want to receive"
-        "below and we will update the settings.", style=Pack(padding=(15, 5), font_size=5))
+        "below and we will update the settings.", style=Pack(padding=(15, 5)))
 
         sub1 = toga.Label("Push Notifications", style=Pack(padding=(15, 5), font_size=15, font_weight="bold"))
 
@@ -79,13 +79,13 @@ class NotificationSettings:
                             sub5, callSwitch,
                             sub6, par6, distanceInput,
                             sub7],
-                style=Pack(direction=COLUMN, padding=10, flex=1, background_color="#ffffff")
+                style=Pack(direction=COLUMN, padding=10, background_color="#ffffff")
             )
         )
 
         main_box = toga.Box(
             children=[header_box, scroll_box],
-            style=Pack(direction=COLUMN))
+            style=Pack(direction=COLUMN, flex=1, padding=10, background_color="#ffffff"))
             
         return main_box
         

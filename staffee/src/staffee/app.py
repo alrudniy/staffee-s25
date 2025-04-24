@@ -8,6 +8,7 @@ from staffee.profile_view import ProfileView
 from staffee.icon_manager import IconManager
 from staffee.user_account import UserAccount
 from staffee.settings import SettingsView
+from staffee.edit_staff_profile import EditStaffProfile
 from passlib.hash import pbkdf2_sha256  # Use passlib's pbkdf2_sha256 hasher (pure Python)
 import os
 
@@ -33,6 +34,7 @@ class MainApp(toga.App):
         self.profile_view = ProfileView(self)
         self.user_account = UserAccount(self)
         self.settings_view = SettingsView(self)
+        self.edit_staff_profile = EditStaffProfile(self)
         
         # Create main content
         self.main_content = self.create_main_content()
