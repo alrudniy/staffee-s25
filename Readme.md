@@ -34,11 +34,9 @@ Link to database [here](http://34.125.69.91/phpmyadmin/index.php).
 
 Database diagram/schema (As currently implemented within project): ![database](images/staffee_db_diagram.drawio.png)
 
-Project details provided by client: 
-```
-    1.[Figma diagram](https://www.figma.com/design/BH4zKZT1vfGf5plBEAAiHb/Staffee-Project)
+Project details provided by client: <br>
+    1.[Figma diagram](https://www.figma.com/design/BH4zKZT1vfGf5plBEAAiHb/Staffee-Project) <br/>
     2.[Product guide](https://guide.staffee.ca/english)
-```
 
 # TODO
 ```
@@ -46,5 +44,5 @@ Project details provided by client:
 [ ] Need to test mobile application for iOS in order to ensure widget defintion (size, formatting) remain as defined in Android mobile application
 [ ] Features with no work completed (buttons with no action): Home, Notification, New Job, Calendar
 [ ] Features with work started (implemented into application, not fully defined/needs work): Chat, Account, owner_view_staff.py
-[ ] EASY: include UUID library to generate a reference to each applicant, the same should be done when a new job is listed by the owner. Ensure that it gets added to sql query within program in order correctly insert instances to table.
+[ ] EASY: include UUID library to generate a reference to each applicant, the same should be done when a new job is listed by the owner.
 ```
