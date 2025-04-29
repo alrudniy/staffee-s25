@@ -18,7 +18,7 @@ source venv/bin/activate
 ## Install Dependencies. With the virtual environment active, install your project’s dependencies from your requirements.txt.
 pip install -r requirements.txt
 
-**Overview**
+## Overview
 The purpose of the Staffee mobile application is to allow applicants to connect with pharmacy owners for employment purposes. Development of this project was undertaken utilizing [Beeware](https://beeware.org/), a collection of Python native cross platform tools. 
 
 In order to run the project with briefcase (android) in terminal:
@@ -35,8 +35,10 @@ Link to database [here](http://34.125.69.91/phpmyadmin/index.php).
 Database diagram/schema (As currently implemented within project): ![database](images/staffee_db_diagram.drawio.png)
 
 Project details provided by client: 
-    1.[Figma diagram](https://www.figma.com/design/BH4zKZT1vfGf5plBEAAiHb/Staffee-Project).
+```
+    1.[Figma diagram](https://www.figma.com/design/BH4zKZT1vfGf5plBEAAiHb/Staffee-Project)
     2.[Product guide](https://guide.staffee.ca/english)
+```
 
 # TODO
 ```
