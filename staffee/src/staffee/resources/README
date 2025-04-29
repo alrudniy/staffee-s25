@@ -1,2 +1,10 @@
 Put any application resources (e.g., icons and resources) here;
-they can be referenced in code as "resources/filename".
+they can be referenced in code as "resources/folder_name_here/your_image.png"
+
+An example of this (using os)
+
+# this will give you the absolute path to the current file you're in, but instead points to resources folder
+self.resource_path = os.path.join(os.path.dirname(__file__), 'resources')
+
+# with the path above, you can access any file you may need within resources ( which is how Briefcase requires
+# resource collection )
