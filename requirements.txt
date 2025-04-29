@@ -1,6 +1,5 @@
 briefcase
 toga
 pillow
-re
 mysql.connector
 passlib
