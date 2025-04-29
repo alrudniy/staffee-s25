@@ -39,8 +39,10 @@ Project details provided by client:
     2.[Product guide](https://guide.staffee.ca/english)
 
 # TODO
+```
 [ ] Define a designated home page for both applicant/owner (no clear path that distingushes after login recongition of owner and applicant)
 [ ] Need to test mobile application for iOS in order to ensure widget defintion (size, formatting) remain as defined in Android mobile application
 [ ] Features with no work completed (buttons with no action): Home, Notification, New Job, Calendar
 [ ] Features with work started (implemented into application, not fully defined/needs work): Chat, Account, owner_view_staff.py
 [ ] EASY: include UUID library to generate a reference to each applicant, the same should be done when a new job is listed by the owner. Ensure that it gets added to sql query within program in order correctly insert instances to table.
+```
