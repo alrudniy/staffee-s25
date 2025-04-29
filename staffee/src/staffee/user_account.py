@@ -3,12 +3,14 @@ import toga
 from toga.style import Pack
 from toga.constants import *
 from staffee.settings import SettingsView
+from staffee.edit_staff_profile import EditStaffProfile
 
 class UserAccount:
     def __init__(self, app):
         self.app = app
         self.resource_path = os.path.join(os.path.dirname(__file__), 'resources')
         self.settings_view = SettingsView(self.app)
+        self.edit_staff_profile = EditStaffProfile(self.app)
     
     
     def create_content(self):
@@ -43,7 +45,8 @@ class UserAccount:
         profile_name = toga.Box(style=Pack(direction = COLUMN, padding=(5, 5, 5, 5), text_align="left",
                                            background_color="#ffffff", alignment=LEFT))
         profile_name.add(toga.Label('Profile Name', style=Pack(font_size=15, padding=(5, 5, 5, 5))))
-        profile_name.add(toga.Label('Edit Staff Profile', style=Pack(font_size=12, padding=(5, 5, 5, 5), color=GREEN)))
+        profile_name.add(toga.Button('Edit Staff Profile', on_press=self.open_edit_staff_view, 
+                                     style=Pack(font_size=12, padding=(5, 5, 5, 5), color=GREEN)))
         profile_box.add(profile_name)
         
         
@@ -93,6 +96,21 @@ class UserAccount:
     def placeholder_action(self, widget):  # Placeholder for action of the add job
         pass
 
+    def open_edit_staff_view(self, widget):
+        """
+        Open the Edit Staff view in the same window.
+        """
+
+        try:
+            self.app.navigation_history.append(self.app.current_view)
+            self.app.current_view = "edit_staff_profile_view"
+
+            staff_view_content = self.edit_staff_profile.create_content()
+            self.app.main_window.title = "Edit Staff View"
+            self.app.main_window.content = staff_view_content
+        except Exception as e:
+            print(f"Error in open_settings_view: {e}")
+    
     def open_settings_view(self, widget):
         """
         Open the Settings view in the same window.
