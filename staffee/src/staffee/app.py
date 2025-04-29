@@ -6,8 +6,7 @@ from toga.constants import COLUMN, ROW
 from staffee.owner_view_staff import OwnerViewStaff
 from staffee.profile_view import ProfileView
 from staffee.icon_manager import IconManager
-from staffee.user_account import UserAccount
-from staffee.settings import SettingsView
+from staffee.chat import ChatView
 from passlib.hash import pbkdf2_sha256  # Use passlib's pbkdf2_sha256 hasher (pure Python)
 import os
 
@@ -23,6 +22,7 @@ DB_CONFIG = {
 
 class MainApp(toga.App):
     def startup(self):
+        self.DB_CONFIG = DB_CONFIG
         # Create main window
         self.main_window = toga.MainWindow(title=self.formal_name)
         
@@ -31,11 +31,18 @@ class MainApp(toga.App):
         
         # Initialize view modules
         self.profile_view = ProfileView(self)
-        self.user_account = UserAccount(self)
-        self.settings_view = SettingsView(self)
         
         # Create main content
         self.main_content = self.create_main_content()
+
+        # Store user information once logged in
+        self.current_user = {
+            "uid": None,
+            "email": None,
+            "first_name": None,
+            "last_name": None,
+            "type": None
+        }
 
         # Show login screen first
         self.show_login_screen()
@@ -204,28 +211,33 @@ class MainApp(toga.App):
             print(f"Database Error: {err}")
             self.message_label.text = f"Database error: {err}"
             return False
-
+    
     def login(self, widget):
-        """Handle user login."""
+        """Handle user login.""" 
+        
         username = self.username_input.value
         password = self.password_input.value
 
-        usertype = self.authenticate_user(username, password)
+        user_info = self.authenticate_user(username, password)
         
-        if usertype:
-            if usertype == "Business Owner":
+        if user_info:
+            # Store user information
+            self.current_user = user_info
+            
+            if user_info["type"] == "Business Owner":
                 connector = mysql.connector.connect(**DB_CONFIG)
                 UID_cursor = connector.cursor(dictionary=True)
 
-                # Query to fetch the UID of Owner - Fixed with proper tuple syntax
+                # Query to fetch the UID of Owner
                 query = "SELECT UID FROM Users WHERE email = %s"
-                UID_cursor.execute(query, (username,))  # Note the comma to make it a tuple
+                UID_cursor.execute(query, (username,))
                 business_owner_uid = UID_cursor.fetchone()
             
                 # Close cursor and connection to prevent resource leaks
                 UID_cursor.close()
                 connector.close()
                 
+                self.current_user["uid"] = business_owner_uid['UID']
                 self.open_owner_view_staff(widget, business_owner_uid['UID'])
             else:
                 self.show_main_content()
@@ -234,21 +246,21 @@ class MainApp(toga.App):
 
     def authenticate_user(self, email, password):
         """
-        Check the database for user credentials and return the user type.
+        Check the database for user credentials and return the user info.
         
         Args:
             email: The user's email address
             password: The user's password
             
         Returns:
-            The user type if authentication is successful, None otherwise
+            Dictionary containing user information if authentication is successful, None otherwise
         """
         try:
             conn = mysql.connector.connect(**DB_CONFIG)
             cursor = conn.cursor(dictionary=True)
 
-            # Query to fetch the user's password and type
-            query = "SELECT password, type FROM Users WHERE email = %s"
+            # Query to fetch the user's password, type, and other information
+            query = "SELECT UID, email, password, type, first_name, last_name FROM Users WHERE email = %s"
             cursor.execute(query, (email,))
             user = cursor.fetchone()
 
@@ -260,13 +272,24 @@ class MainApp(toga.App):
 
             # Use passlib's verify method instead of bcrypt.checkpw
             if pbkdf2_sha256.verify(password, user['password']):
-                return user['type']  # Return the user type if credentials are correct
+                # Return user information if credentials are correct
+                return {
+                    "uid": user['UID'],
+                    "email": user['email'],
+                    "first_name": user['first_name'],
+                    "last_name": user['last_name'],
+                    "type": user['type']
+                }
             else:
                 print("Password does not match.")  # Debugging
                 return None
+                
         except mysql.connector.Error as err:
             print(f"Database Error: {err}")
             return None
+        finally:
+            cursor.close()
+            conn.close()
     
     def show_main_content(self):
         """
@@ -318,6 +341,7 @@ class MainApp(toga.App):
         )
 
         # Navigation bar - use the icon manager to create it
+        # Modified: removed chat_action parameter to match current method signature
         nav_box = self.icon_manager.create_nav_bar()
         
         # Main content layout
@@ -328,7 +352,7 @@ class MainApp(toga.App):
 
         return main_content
 
-    def open_owner_view_staff(self, widget,business_owner_uid = None, db_details = DB_CONFIG):
+    def open_owner_view_staff(self, widget, business_owner_uid=None):
         """
         Navigate to the Owner View Staff screen.
         Adds current view to navigation history for back navigation.
@@ -344,6 +368,39 @@ class MainApp(toga.App):
             self.main_window.content = staff_content
         except Exception as e:
             print(f"Error in open_owner_view_staff: {e}")
+
+    def open_chat_view(self, widget):
+        """
+        Navigate to the Chat View screen.
+        """
+        try:
+            # Check if user is logged in
+            if not self.current_user["uid"]:
+                print("User not logged in")
+                return
+
+            # Add current view to navigation history
+            self.navigation_history.append(self.current_view)
+            self.current_view = "chat_view"
+            
+            # Create new chat view
+            chat_view = ChatView(self, DB_CONFIG)
+            
+            # Create the content
+            chat_content = chat_view.create_content()
+            
+            # Initialize with current user data
+            chat_view.initialize_user_data(
+                self.current_user["uid"], 
+                self.current_user["type"]
+            )
+            
+            # Set as main window content
+            self.main_window.title = "Chat"
+            self.main_window.content = chat_content
+            
+        except Exception as e:
+            print(f"Error in open_chat_view: {e}")
 
     def placeholder_action(self, widget):
         """
