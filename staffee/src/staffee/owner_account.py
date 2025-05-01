@@ -52,6 +52,10 @@ class UserAccount:
         
 
         # Button select
+        business_profile = toga.Button("Business Profile", 
+                                     on_press=self.placeholder_action,
+                                     style=Pack(height=40, padding=5, background_color="#ffffff",
+                                                color="#364052", font_size=10))
         history_button = toga.Button("History", 
                                      on_press=self.placeholder_action,
                                      style=Pack(height=40, padding=5, background_color="#ffffff",
@@ -62,7 +66,7 @@ class UserAccount:
                                      style=Pack(height=40, padding=5, background_color="#ffffff",
                                                 color="#364052", font_size=10))
         
-        settings_button = toga.Button("Settings",
+        settings_button = toga.Button("Setting",
                                         on_press=self.open_settings_view,
                                         style=Pack(height=40, padding=5, background_color="#ffffff",
                                                     color="#364052", font_size=10))
@@ -125,6 +129,21 @@ class UserAccount:
             self.app.main_window.content = settings_content
         except Exception as e:
             print(f"Error in open_settings_view: {e}")
+
+    def open_business_profile_view(self, widget):
+        """
+        Open the Settings view in the same window.
+        """
+
+        try:
+            self.app.navigation_history.append(self.app.current_view)
+            self.app.current_view = "business_profile_view"
+
+            business_profile_content = self.business_profile.create_content()
+            self.app.main_window.title = "Business Profile View"
+            self.app.main_window.content = business_profile_content
+        except Exception as e:
+            print(f"Error in open_business_profile_view: {e}")
         
     # Navigate back
     def navigate_back(self, widget):
@@ -141,3 +160,5 @@ class UserAccount:
                     self.app.main_window.title = "Staff View"
                     if hasattr(self.app, "staff_view"):
                         self.app.main_window.content = self.app.staff_view.create_content() 
+
+    

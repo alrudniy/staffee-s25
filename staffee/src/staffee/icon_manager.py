@@ -3,6 +3,7 @@ import toga
 from toga.style.pack import ROW, COLUMN
 from staffee.user_account import UserAccount
 from staffee.chat import ChatView  # Import the ChatView class for handling the chat screen
+import mysql.connector
 
 class IconManager:
     def __init__(self, app):
@@ -261,13 +262,17 @@ class IconManager:
         print("Go notifications")
 
     def acc_action(self, widget=None):
-        """Open the Account view in the same window."""
-        try:
-            self.app.navigation_history.append(self.app.current_view)
-            self.app.current_view = "account_view"
-            self.app.main_window.title = "Account View"
+        if self.app.current_user["type"] == "Applicant":
+                                
+            """Open the Account view in the same window."""
+            try:
+                self.app.navigation_history.append(self.app.current_view)
+                self.app.current_view = "account_view"
+                self.app.main_window.title = "Account View"
 
-            account_content = self.account_view.create_content()
-            self.app.main_window.content = account_content
-        except Exception as e:
-            print(f"Error in acc_action: {e}")
+                account_content = self.account_view.create_content()
+                self.app.main_window.content = account_content
+            except Exception as e:
+                print(f"Error in acc_action: {e}")
+
+        else: print("hello")
