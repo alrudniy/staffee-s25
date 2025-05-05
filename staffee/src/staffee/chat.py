@@ -26,29 +26,28 @@ class ChatView:
         self.new_chat_dialog = None
         
     def create_content(self):
-        """Create the main chat interface layout."""
+        """Create the main chat interface layout without SplitContainer."""
         # Main container
         main_box = toga.Box(style=Pack(direction=COLUMN, flex=1))
-        
+
         # Create header with back button and title
         header_box = self._create_header()
         main_box.add(header_box)
-        
-        # Create the chat interface
-        chat_interface = toga.SplitContainer()
-        
+
+        # Chat area container (replaces SplitContainer with horizontal Box)
+        chat_area_box = toga.Box(style=Pack(direction=ROW, flex=1))
+
         # Left side - Chat list
         self.chat_list_box = toga.Box(style=Pack(direction=COLUMN, flex=1, padding=5))
-        left_container = toga.ScrollContainer(content=self.chat_list_box)
-        
+        left_container = toga.ScrollContainer(content=self.chat_list_box, style=Pack(width=200))
+
         # Right side - Messages and input
         right_container = toga.Box(style=Pack(direction=COLUMN, flex=2))
-        
+
         # Messages area
         self.message_list_box = toga.Box(style=Pack(direction=COLUMN, padding=5))
-        message_container = toga.ScrollContainer(content=self.message_list_box)
-        message_container.style.update(flex=1)
-        
+        message_container = toga.ScrollContainer(content=self.message_list_box, style=Pack(flex=1))
+
         # Input area
         input_box = toga.Box(style=Pack(direction=ROW, padding=5))
         self.message_input = toga.MultilineTextInput(
@@ -62,16 +61,18 @@ class ChatView:
         )
         input_box.add(self.message_input)
         input_box.add(self.send_button)
-        
+
+        # Assemble right container
         right_container.add(message_container)
         right_container.add(input_box)
-        
-        # Set up the split container
-        chat_interface.content = [left_container, right_container]
-        chat_interface.style.update(flex=1)
-        
-        main_box.add(chat_interface)
-        
+
+        # Add both containers to the horizontal box
+        chat_area_box.add(left_container)
+        chat_area_box.add(right_container)
+
+        # Add chat area to main box
+        main_box.add(chat_area_box)
+
         return main_box
     
     def _create_header(self):

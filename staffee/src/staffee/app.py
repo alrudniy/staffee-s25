@@ -240,7 +240,6 @@ class MainApp(toga.App):
                 UID_cursor.execute(query, (username,))
                 business_owner_uid = UID_cursor.fetchone()
             
-                # Close cursor and connection to prevent resource leaks
                 UID_cursor.close()
                 connector.close()
                 

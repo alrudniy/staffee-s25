@@ -251,7 +251,6 @@ class IconManager:
                 self.app.current_user["uid"],
                 self.app.current_user["type"]
             )
-
             self.app.main_window.content = chat_content
 
         except Exception as e:
