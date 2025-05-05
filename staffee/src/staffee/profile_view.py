@@ -158,8 +158,6 @@ class ProfileView:
                 details_display,
                 button_container,
                 toga.Box(style=Pack(flex=1)),  # Spacer
-                # We could add navigation here if needed using:
-                # self.app.icon_manager.create_nav_bar(self.placeholder_action)
             ],
             style=Pack(direction=COLUMN, padding=10)
         )
